@@ -463,3 +463,4 @@ INSERT INTO achievements (id, name, display_name, description, criteria) VALUES
 - User settings stored as separate columns (not JSONB)
 - Enables type checking and simpler queries
 - `tutorial_completed_modes` uses TEXT[] for flexibility
+
