@@ -1,10 +1,12 @@
 import type { APIRoute } from 'astro';
+
+import { createSupabaseServerInstance } from '../../../db/supabase.client';
 import { passwordResetCommandSchema } from '../../../lib/schemas/auth.schemas';
-import { AuthService } from '../../../lib/services/auth.service';
+import type { PasswordResetResponseDTO } from '../../../types';
 
 export const prerender = false;
 
-export const POST: APIRoute = async ({ request, locals, url }) => {
+export const POST: APIRoute = async ({ request, cookies, url }) => {
   // Parse request body
   let body: unknown;
   try {
@@ -28,22 +30,44 @@ export const POST: APIRoute = async ({ request, locals, url }) => {
     );
   }
 
-  // Build redirect URL (password update page on same domain)
-  const redirectTo = `${url.origin}/auth/password-update`;
+  // Build redirect URL (uses auth callback which then redirects to password update)
+  const redirectTo = `${url.origin}/auth/callback`;
 
-  // Call service
-  const authService = new AuthService(locals.supabase);
-  const result = await authService.requestPasswordReset(validation.data, redirectTo);
+  // Create Supabase server instance
+  const supabase = createSupabaseServerInstance({
+    cookies,
+    headers: request.headers,
+  });
 
-  // Return response
-  if (result.error) {
-    return new Response(JSON.stringify(result.error.body), {
-      status: result.error.status,
-      headers: { 'Content-Type': 'application/json' },
-    });
+  // Request password reset
+  const { error } = await supabase.auth.resetPasswordForEmail(validation.data.email, {
+    redirectTo,
+  });
+
+  // Log errors but always return success to prevent email enumeration
+  if (error) {
+    console.error('Password reset error:', error.message);
+
+    // Only expose actual server errors
+    if (
+      error.message.includes('rate') ||
+      error.message.includes('limit') ||
+      error.message.includes('server') ||
+      error.message.includes('network')
+    ) {
+      return new Response(
+        JSON.stringify({ code: 'SERVER_ERROR', message: 'Password reset request failed' }),
+        { status: 500, headers: { 'Content-Type': 'application/json' } }
+      );
+    }
   }
 
-  return new Response(JSON.stringify(result.data), {
+  // Always return success to prevent email enumeration
+  const response: PasswordResetResponseDTO = {
+    message: 'If an account exists with this email, a password reset link has been sent.',
+  };
+
+  return new Response(JSON.stringify(response), {
     status: 200,
     headers: { 'Content-Type': 'application/json' },
   });

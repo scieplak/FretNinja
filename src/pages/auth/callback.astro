@@ -1,5 +1,46 @@
 ---
 import Layout from "../../layouts/Layout.astro";
+import { createSupabaseServerInstance } from "../../db/supabase.client";
+
+// Handle auth callback from Supabase (email confirmation, password recovery, etc.)
+const { cookies, request, url, redirect } = Astro;
+
+// Get the auth code from URL
+const code = url.searchParams.get("code");
+const type = url.searchParams.get("type");
+const error = url.searchParams.get("error");
+const errorDescription = url.searchParams.get("error_description");
+
+// Handle errors from Supabase
+if (error) {
+  console.error("Auth callback error:", error, errorDescription);
+  return redirect(`/login?error=${encodeURIComponent(errorDescription || error)}`);
+}
+
+// If we have a code, exchange it for a session
+if (code) {
+  const supabase = createSupabaseServerInstance({
+    cookies,
+    headers: request.headers,
+  });
+
+  const { error: exchangeError } = await supabase.auth.exchangeCodeForSession(code);
+
+  if (exchangeError) {
+    console.error("Code exchange error:", exchangeError.message);
+    return redirect(`/login?error=${encodeURIComponent("Authentication failed. Please try again.")}`);
+  }
+
+  // For password recovery, redirect to password update page
+  if (type === "recovery") {
+    return redirect("/auth/password-update");
+  }
+
+  // For other types (signup confirmation, magic link), redirect to dashboard
+  return redirect("/dashboard");
+}
+
+// If no code, show a loading/processing message (for client-side token handling)
 ---
 
 <Layout title="Confirming • FretNinja">
@@ -41,41 +82,42 @@ import Layout from "../../layouts/Layout.astro";
 </Layout>
 
 <script>
-  const handleAuthCallback = async () => {
+  // Fallback client-side handling for hash-based tokens (older Supabase flows)
+  const handleHashTokens = async () => {
     const hashParams = new URLSearchParams(window.location.hash.substring(1));
-    const searchParams = new URLSearchParams(window.location.search);
-
-    const accessToken =
-      hashParams.get("access_token") || searchParams.get("access_token");
-    const refreshToken =
-      hashParams.get("refresh_token") || searchParams.get("refresh_token");
-    const type = hashParams.get("type") || searchParams.get("type");
-    const error = hashParams.get("error") || searchParams.get("error");
-    const errorDescription =
-      hashParams.get("error_description") || searchParams.get("error_description");
+    const accessToken = hashParams.get("access_token");
+    const refreshToken = hashParams.get("refresh_token");
+    const type = hashParams.get("type");
+    const error = hashParams.get("error");
+    const errorDescription = hashParams.get("error_description");
 
     if (error) {
-      console.error("Auth callback error:", error, errorDescription);
       window.location.href = `/login?error=${encodeURIComponent(errorDescription || error)}`;
       return;
     }
 
-    if (type === "recovery" && accessToken) {
-      window.location.href = `/auth/password-update?token=${accessToken}`;
-      return;
-    }
-
+    // If we have hash tokens, we need to set up the session
     if (accessToken) {
-      localStorage.setItem("fn_access_token", accessToken);
-      if (refreshToken) {
-        localStorage.setItem("fn_refresh_token", refreshToken);
+      // For recovery, redirect to password update with token
+      if (type === "recovery") {
+        window.location.href = `/auth/password-update?token=${accessToken}`;
+        return;
       }
+
+      // For other flows, the session should be set via cookies by now
+      // Just redirect to dashboard
       window.location.href = "/dashboard";
       return;
     }
 
-    window.location.href = "/login";
+    // No tokens found, redirect to login after a short delay
+    setTimeout(() => {
+      window.location.href = "/login";
+    }, 2000);
   };
 
-  handleAuthCallback();
+  // Only run client-side handling if there's a hash
+  if (window.location.hash) {
+    handleHashTokens();
+  }
 </script>

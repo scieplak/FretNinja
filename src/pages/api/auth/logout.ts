@@ -1,34 +1,33 @@
 import type { APIRoute } from 'astro';
-import { AuthService } from '../../../lib/services/auth.service';
-import { verifyAuth } from '../../../lib/helpers/auth.helper';
+
+import { createSupabaseServerInstance } from '../../../db/supabase.client';
+import type { LogoutResponseDTO } from '../../../types';
 
 export const prerender = false;
 
-export const POST: APIRoute = async ({ request, locals }) => {
-  // Verify authentication
-  const authHeader = request.headers.get('Authorization');
-  const authResult = await verifyAuth(locals.supabase, authHeader);
+export const POST: APIRoute = async ({ request, cookies }) => {
+  // Create Supabase server instance with cookie management
+  const supabase = createSupabaseServerInstance({
+    cookies,
+    headers: request.headers,
+  });
 
-  if (authResult.error) {
-    return new Response(JSON.stringify(authResult.error.body), {
-      status: authResult.error.status,
-      headers: { 'Content-Type': 'application/json' },
-    });
+  // Sign out - this will clear the session cookies
+  const { error } = await supabase.auth.signOut();
+
+  if (error) {
+    console.error('Logout error:', error.message);
+    return new Response(
+      JSON.stringify({ code: 'SERVER_ERROR', message: 'Logout failed' }),
+      { status: 500, headers: { 'Content-Type': 'application/json' } }
+    );
   }
 
-  // Call service
-  const authService = new AuthService(locals.supabase);
-  const result = await authService.logout();
+  const response: LogoutResponseDTO = {
+    message: 'Logged out successfully',
+  };
 
-  // Return response
-  if (result.error) {
-    return new Response(JSON.stringify(result.error.body), {
-      status: result.error.status,
-      headers: { 'Content-Type': 'application/json' },
-    });
-  }
-
-  return new Response(JSON.stringify(result.data), {
+  return new Response(JSON.stringify(response), {
     status: 200,
     headers: { 'Content-Type': 'application/json' },
   });

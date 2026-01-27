@@ -102,7 +102,8 @@ export interface SessionDTO {
 /** Response payload for successful login */
 export interface LoginResponseDTO {
   user: AuthUserDTO;
-  session: SessionDTO;
+  /** Session tokens - only included for non-cookie auth flows */
+  session?: SessionDTO;
 }
 
 /** Response payload for successful logout */

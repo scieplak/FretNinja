@@ -1,6 +1,9 @@
 ---
 import AuthLayout from "../layouts/AuthLayout.astro";
 import LoginForm from "../components/auth/LoginForm";
+
+// Get redirect parameter from URL query string
+const redirectTo = Astro.url.searchParams.get("redirect") || undefined;
 ---
 
 <AuthLayout
@@ -9,7 +12,7 @@ import LoginForm from "../components/auth/LoginForm";
   subtitle="Sign in to continue"
   description="Pick up right where you left off with your latest practice."
 >
-  <LoginForm client:idle />
+  <LoginForm client:load redirectTo={redirectTo} />
 
   <p slot="footer" class="mt-6 text-center text-sm text-slate-400">
     New to FretNinja?

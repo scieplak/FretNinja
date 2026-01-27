@@ -5,7 +5,18 @@ import type { ApiErrorDTO, PasswordResetCommand, PasswordUpdateCommand } from "@
 
 const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
-const getResetTokenFromUrl = () => {
+/**
+ * Check if we're on the password update page (came from recovery flow)
+ * The callback page redirects here after exchanging the code for a session
+ */
+function isPasswordUpdatePage(): boolean {
+  return window.location.pathname.includes("/password-update");
+}
+
+/**
+ * Get recovery token from URL if present (fallback for older flows)
+ */
+function getResetTokenFromUrl(): string | null {
   const searchParams = new URLSearchParams(window.location.search);
   const hashParams = new URLSearchParams(window.location.hash.replace(/^#/, ""));
 
@@ -15,7 +26,7 @@ const getResetTokenFromUrl = () => {
     hashParams.get("access_token") ||
     hashParams.get("token")
   );
-};
+}
 
 const PasswordResetForm = () => {
   const emailId = useId();
@@ -36,6 +47,18 @@ const PasswordResetForm = () => {
   const isPasswordValid = useMemo(() => password.length >= 8, [password]);
 
   useEffect(() => {
+    // Check if we're on the password update page (came from recovery flow via callback)
+    if (isPasswordUpdatePage()) {
+      setStep("update");
+      // Check for token in URL as fallback
+      const foundToken = getResetTokenFromUrl();
+      if (foundToken) {
+        setToken(foundToken);
+      }
+      return;
+    }
+
+    // Also check for token on reset-password page (direct link from email)
     const foundToken = getResetTokenFromUrl();
     if (foundToken) {
       setToken(foundToken);
@@ -72,6 +95,7 @@ const PasswordResetForm = () => {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify(payload),
+          credentials: "include",
         });
 
         if (!response.ok && response.status === 400) {
@@ -90,7 +114,7 @@ const PasswordResetForm = () => {
         setMessage(
           "If that email exists, you'll receive a reset link shortly. Check your inbox and spam folder."
         );
-      } catch (error) {
+      } catch {
         setErrorMessage("Network error. Please check your connection and try again.");
       } finally {
         setIsSubmitting(false);
@@ -110,25 +134,29 @@ const PasswordResetForm = () => {
         return;
       }
 
-      if (!token) {
-        setErrorMessage("Reset token is missing or expired. Please request a new link.");
-        setStep("request");
-        return;
-      }
-
       setIsSubmitting(true);
 
       try {
         const payload: PasswordUpdateCommand = { password };
+        const headers: Record<string, string> = {
+          "Content-Type": "application/json",
+        };
+
+        // Include token in Authorization header if we have one (fallback flow)
+        if (token) {
+          headers["Authorization"] = `Bearer ${token}`;
+        }
+
         const response = await fetch("/api/auth/password-update", {
           method: "POST",
-          headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
+          headers,
           body: JSON.stringify(payload),
+          credentials: "include", // Include cookies for session-based auth
         });
 
         if (!response.ok) {
           const error = (await response.json().catch(() => null)) as ApiErrorDTO | null;
-          if (error?.code === "INVALID_TOKEN") {
+          if (error?.code === "INVALID_TOKEN" || error?.code === "UNAUTHORIZED") {
             setErrorMessage("Reset link is invalid or expired. Please request a new one.");
             setStep("request");
             return;
@@ -141,7 +169,7 @@ const PasswordResetForm = () => {
         setTimeout(() => {
           window.location.href = "/login";
         }, 1500);
-      } catch (error) {
+      } catch {
         setErrorMessage("Network error. Please check your connection and try again.");
       } finally {
         setIsSubmitting(false);
@@ -162,6 +190,7 @@ const PasswordResetForm = () => {
             name="password"
             type={showPassword ? "text" : "password"}
             autoComplete="new-password"
+            autoFocus
             required
             value={password}
             onChange={handlePasswordChange}
@@ -178,6 +207,7 @@ const PasswordResetForm = () => {
             {showPassword ? "Hide" : "Show"}
           </button>
         </div>
+        <p className="text-xs text-slate-400">Minimum 8 characters</p>
         {touched.password && !isPasswordValid ? (
           <p id={errorId} className="text-xs text-rose-300">
             Password must be at least 8 characters.
@@ -186,13 +216,21 @@ const PasswordResetForm = () => {
       </div>
 
       {errorMessage ? (
-        <div role="alert" aria-live="polite" className="rounded-lg border border-rose-500/40 bg-rose-500/10 px-4 py-3 text-sm text-rose-200">
+        <div
+          role="alert"
+          aria-live="polite"
+          className="rounded-lg border border-rose-500/40 bg-rose-500/10 px-4 py-3 text-sm text-rose-200"
+        >
           {errorMessage}
         </div>
       ) : null}
 
       {message ? (
-        <div role="status" aria-live="polite" className="rounded-lg border border-emerald-400/40 bg-emerald-400/10 px-4 py-3 text-sm text-emerald-100">
+        <div
+          role="status"
+          aria-live="polite"
+          className="rounded-lg border border-emerald-400/40 bg-emerald-400/10 px-4 py-3 text-sm text-emerald-100"
+        >
           {message}
         </div>
       ) : null}
@@ -241,13 +279,21 @@ const PasswordResetForm = () => {
       </div>
 
       {errorMessage ? (
-        <div role="alert" aria-live="polite" className="rounded-lg border border-rose-500/40 bg-rose-500/10 px-4 py-3 text-sm text-rose-200">
+        <div
+          role="alert"
+          aria-live="polite"
+          className="rounded-lg border border-rose-500/40 bg-rose-500/10 px-4 py-3 text-sm text-rose-200"
+        >
           {errorMessage}
         </div>
       ) : null}
 
       {message ? (
-        <div role="status" aria-live="polite" className="rounded-lg border border-emerald-400/40 bg-emerald-400/10 px-4 py-3 text-sm text-emerald-100">
+        <div
+          role="status"
+          aria-live="polite"
+          className="rounded-lg border border-emerald-400/40 bg-emerald-400/10 px-4 py-3 text-sm text-emerald-100"
+        >
           {message}
         </div>
       ) : null}

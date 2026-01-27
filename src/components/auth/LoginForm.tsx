@@ -5,7 +5,23 @@ import type { ApiErrorDTO, LoginCommand, LoginResponseDTO } from "@/types";
 
 const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
-const getApiErrorMessage = (error: ApiErrorDTO | null, fallback: string) => {
+/**
+ * Validates that a redirect URL is safe (internal only)
+ * Prevents open redirect vulnerabilities
+ */
+function isValidRedirectUrl(url: string): boolean {
+  // Must start with / and not contain //
+  if (!url.startsWith("/") || url.includes("//")) {
+    return false;
+  }
+  // Prevent protocol-relative URLs
+  if (url.startsWith("//")) {
+    return false;
+  }
+  return true;
+}
+
+function getApiErrorMessage(error: ApiErrorDTO | null, fallback: string): string {
   if (!error) {
     return fallback;
   }
@@ -19,9 +35,14 @@ const getApiErrorMessage = (error: ApiErrorDTO | null, fallback: string) => {
   }
 
   return fallback;
-};
+}
 
-const LoginForm = () => {
+interface LoginFormProps {
+  /** URL to redirect to after successful login */
+  redirectTo?: string;
+}
+
+const LoginForm = ({ redirectTo }: LoginFormProps) => {
   const emailId = useId();
   const passwordId = useId();
   const errorId = useId();
@@ -29,7 +50,6 @@ const LoginForm = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
-  const [rememberMe, setRememberMe] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [apiError, setApiError] = useState<string | null>(null);
 
@@ -63,6 +83,7 @@ const LoginForm = () => {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify(payload),
+          credentials: "include", // Important: include cookies in request
         });
 
         if (!response.ok) {
@@ -71,20 +92,25 @@ const LoginForm = () => {
           return;
         }
 
+        // Session is now managed via httpOnly cookies set by the server
+        // No need to store tokens in localStorage
         const data = (await response.json()) as LoginResponseDTO;
-        if (data?.session?.access_token) {
-          localStorage.setItem("fn_access_token", data.session.access_token);
-          window.location.href = "/dashboard";
+
+        if (data?.user) {
+          // Determine redirect URL - validate if provided, default to dashboard
+          const targetUrl =
+            redirectTo && isValidRedirectUrl(redirectTo) ? redirectTo : "/dashboard";
+          window.location.href = targetUrl;
         } else {
           setApiError("Login failed. Please try again.");
         }
-      } catch (error) {
+      } catch {
         setApiError("Network error. Please check your connection and try again.");
       } finally {
         setIsSubmitting(false);
       }
     },
-    [canSubmit, email, password]
+    [canSubmit, email, password, redirectTo]
   );
 
   return (
@@ -132,16 +158,7 @@ const LoginForm = () => {
         </div>
       </div>
 
-      <div className="flex items-center justify-between text-sm text-slate-300">
-        <label className="flex items-center gap-2">
-          <input
-            type="checkbox"
-            checked={rememberMe}
-            onChange={(event) => setRememberMe(event.target.checked)}
-            className="h-4 w-4 rounded border-white/20 bg-slate-900 text-emerald-400 focus:ring-emerald-400/40"
-          />
-          Remember me
-        </label>
+      <div className="flex justify-end text-sm">
         <a href="/reset-password" className="text-emerald-200 hover:text-emerald-100">
           Forgot password?
         </a>
@@ -167,10 +184,7 @@ const LoginForm = () => {
       </button>
 
       <p className="text-center text-xs text-slate-400">
-        Secure login uses encrypted sessions.{" "}
-        <span className="text-slate-300">
-          {rememberMe ? "We'll keep you signed in longer." : "You can opt into longer sessions."}
-        </span>
+        Secure login uses encrypted sessions managed by the server.
       </p>
     </form>
   );
