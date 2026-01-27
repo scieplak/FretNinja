@@ -1,0 +1,12 @@
+---
+import Layout from "../layouts/Layout.astro";
+import QuizHub from "../components/quiz/QuizHub";
+---
+
+<Layout title="Quiz Hub • FretNinja">
+  <main id="main-content" class="min-h-screen bg-slate-950 px-6 py-12 text-white">
+    <div class="mx-auto max-w-5xl">
+      <QuizHub client:load />
+    </div>
+  </main>
+</Layout>

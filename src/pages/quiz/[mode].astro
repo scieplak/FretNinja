@@ -1,0 +1,15 @@
+---
+import Layout from "../../layouts/Layout.astro";
+import QuizActiveView from "../../components/quiz/QuizActiveView";
+
+const { mode } = Astro.params;
+const quizMode = (mode ?? "find-note") as "find-note" | "name-note" | "mark-chord" | "recognize-interval";
+---
+
+<Layout title="Quiz • FretNinja">
+  <main id="main-content" class="min-h-screen bg-slate-950 px-6 py-12 text-white">
+    <div class="mx-auto max-w-5xl">
+      <QuizActiveView mode={quizMode} client:load />
+    </div>
+  </main>
+</Layout>

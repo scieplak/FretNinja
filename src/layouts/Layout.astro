@@ -5,11 +5,11 @@ interface Props {
   title?: string;
 }
 
-const { title = "10x Astro Starter" } = Astro.props;
+const { title = "FretNinja" } = Astro.props;
 ---
 
 <!doctype html>
-<html lang="en">
+<html lang="en" class="dark">
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width" />
@@ -17,7 +17,19 @@ const { title = "10x Astro Starter" } = Astro.props;
     <meta name="generator" content={Astro.generator} />
     <title>{title}</title>
   </head>
-  <body>
+  <body class="min-h-screen bg-background text-foreground">
+    <a
+      href="#main-content"
+      class="sr-only focus:not-sr-only focus:absolute focus:left-4 focus:top-4 focus:z-50 focus:rounded-md focus:bg-slate-900 focus:px-3 focus:py-2 focus:text-sm focus:text-white"
+    >
+      Skip to main content
+    </a>
+    <div class="rotate-prompt bg-slate-950/95 text-white">
+      <div class="rounded-2xl border border-emerald-400/40 bg-emerald-400/10 px-6 py-4 text-center">
+        <p class="text-sm font-semibold text-emerald-100">Rotate your device</p>
+        <p class="mt-2 text-xs text-slate-200">Landscape orientation works best for the fretboard.</p>
+      </div>
+    </div>
     <slot />
   </body>
 </html>

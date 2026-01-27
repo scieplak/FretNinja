@@ -1,0 +1,30 @@
+---
+import Layout from "../layouts/Layout.astro";
+import LoginForm from "../components/auth/LoginForm";
+---
+
+<Layout title="Login • FretNinja">
+  <main
+    id="main-content"
+    class="flex min-h-screen items-center justify-center bg-slate-950 px-6 py-16 text-white"
+  >
+    <div class="w-full max-w-md">
+      <div class="rounded-2xl border border-white/10 bg-white/5 p-8 shadow-2xl shadow-slate-900/50">
+        <div class="space-y-2">
+          <p class="text-xs font-semibold uppercase tracking-[0.3em] text-emerald-300">Welcome back</p>
+          <h1 class="text-2xl font-semibold text-white">Sign in to continue</h1>
+          <p class="text-sm text-slate-300">Pick up right where you left off with your latest practice.</p>
+        </div>
+
+        <div class="mt-8">
+          <LoginForm client:idle />
+        </div>
+
+        <p class="mt-6 text-center text-sm text-slate-400">
+          New to FretNinja?
+          <a href="/register" class="ml-1 text-emerald-200 hover:text-emerald-100">Create an account</a>
+        </p>
+      </div>
+    </div>
+  </main>
+</Layout>

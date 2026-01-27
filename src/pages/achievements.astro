@@ -1,0 +1,12 @@
+---
+import Layout from "../layouts/Layout.astro";
+import AchievementsView from "../components/achievements/AchievementsView";
+---
+
+<Layout title="Achievements • FretNinja">
+  <main id="main-content" class="min-h-screen bg-slate-950 px-6 py-12 text-white">
+    <div class="mx-auto max-w-6xl">
+      <AchievementsView client:visible />
+    </div>
+  </main>
+</Layout>
