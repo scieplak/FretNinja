@@ -57,6 +57,12 @@ FretNinja helps beginner and intermediate guitarists develop a deep, intuitive u
 
 - **OpenRouter.ai** - Access to multiple AI models for learning hints
 
+### Testing
+
+- **Vitest** - Unit and integration testing
+- **React Testing Library** - Component testing
+- **Playwright** - End-to-end testing
+
 ### CI/CD & Hosting
 
 - **GitHub Actions** - CI/CD pipelines

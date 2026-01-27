@@ -23,6 +23,15 @@ Communication with models through Openrouter.ai service:
 - Access to a wide range of models (OpenAI, Anthropic, Google, and many others), allowing us to find a solution with high efficiency and low cost
 - Enables setting financial limits on API keys
 
+## Testing
+
+Unit and integration testing:
+- Vitest as the primary test runner with fast execution and native TypeScript support
+- React Testing Library for component testing with user-centric approach
+
+End-to-end testing:
+- Playwright for cross-browser E2E testing with support for Chromium, Firefox, and WebKit
+
 ## CI/CD and Hosting
 
 - GitHub Actions for creating CI/CD pipelines
