@@ -4,6 +4,7 @@ import type {
   NoteEnum,
   IntervalEnum,
   ChordTypeEnum,
+  QuizTypeEnum,
   CreateQuizAnswerCommand,
   CreateQuizSessionCommand,
   UpdateQuizSessionCommand,
@@ -34,13 +35,14 @@ const MODE_LABELS: Record<QuizMode, string> = {
   "recognize-interval": "Recognize the Interval",
 };
 
-const toQuizTypeEnum = (mode: QuizMode) =>
-  ({
-    "find-note": "find_note",
-    "name-note": "name_note",
-    "mark-chord": "mark_chord",
-    "recognize-interval": "recognize_interval",
-  })[mode];
+const QUIZ_TYPE_MAP: Record<QuizMode, QuizTypeEnum> = {
+  "find-note": "find_note",
+  "name-note": "name_note",
+  "mark-chord": "mark_chord",
+  "recognize-interval": "recognize_interval",
+};
+
+const toQuizTypeEnum = (mode: QuizMode): QuizTypeEnum => QUIZ_TYPE_MAP[mode];
 
 const getToken = () => (typeof window === "undefined" ? null : localStorage.getItem("fn_access_token"));
 
@@ -132,6 +134,10 @@ const QuizActiveView = ({ mode }: { mode: QuizMode }) => {
   const [selectedPositions, setSelectedPositions] = useState<FretPosition[]>([]);
   const [selectedOption, setSelectedOption] = useState<string | null>(null);
   const [feedback, setFeedback] = useState<{ correct: boolean; message: string } | null>(null);
+  const [feedbackPositions, setFeedbackPositions] = useState<{
+    correct: FretPosition[];
+    incorrect: FretPosition[];
+  }>({ correct: [], incorrect: [] });
   const [sessionId, setSessionId] = useState<string | null>(null);
   const [isGuest, setIsGuest] = useState(false);
   const [timeRemaining, setTimeRemaining] = useState<number | null>(null);
@@ -272,9 +278,20 @@ const QuizActiveView = ({ mode }: { mode: QuizMode }) => {
 
       if (mode === "find-note") {
         const isCorrect = position.note === currentQuestion.targetNote;
+        // Show feedback on the fretboard
+        if (isCorrect) {
+          setFeedbackPositions({ correct: [position], incorrect: [] });
+        } else {
+          // Find all correct positions for this note
+          const allPositions = getFretboardPositions(12);
+          const correctPositionsForNote = allPositions.filter(
+            (pos) => pos.note === currentQuestion.targetNote
+          );
+          setFeedbackPositions({ correct: correctPositionsForNote, incorrect: [position] });
+        }
         handleAnswer({
           isCorrect,
-          userAnswer: `${position.note} (${position.string}/${position.fret})`,
+          userAnswer: `${position.note} (S${position.string}/F${position.fret})`,
           userAnswerRaw: position.note,
           correctAnswer: `${currentQuestion.targetNote}`,
         });
@@ -294,26 +311,52 @@ const QuizActiveView = ({ mode }: { mode: QuizMode }) => {
   const submitOptionAnswer = useCallback(() => {
     if (!selectedOption || status !== "question") return;
     const isCorrect = selectedOption === currentQuestion.targetNote || selectedOption === currentQuestion.targetInterval;
+
+    // Show feedback on the fretboard for name-note mode
+    if (mode === "name-note") {
+      setFeedbackPositions({
+        correct: isCorrect ? [currentQuestion.position] : [currentQuestion.position],
+        incorrect: [],
+      });
+    }
+
     handleAnswer({
       isCorrect,
       userAnswer: formatIntervalLabel(selectedOption),
       userAnswerRaw: selectedOption,
       correctAnswer: formatIntervalLabel(currentQuestion.targetNote ?? currentQuestion.targetInterval ?? ""),
     });
-  }, [currentQuestion, selectedOption, status]);
+  }, [currentQuestion, mode, selectedOption, status]);
 
   const submitChordAnswer = useCallback(() => {
     if (status !== "question") return;
-    const correctPositions = currentQuestion.correctPositions ?? [];
+    const correctPositionsForChord = currentQuestion.correctPositions ?? [];
     const isCorrect =
-      selectedPositions.length === correctPositions.length &&
+      selectedPositions.length === correctPositionsForChord.length &&
       selectedPositions.every((pos) =>
-        correctPositions.some((correct) => correct.fret === pos.fret && correct.string === pos.string)
+        correctPositionsForChord.some((correct) => correct.fret === pos.fret && correct.string === pos.string)
       );
+
+    // Show feedback on the fretboard
+    const correctlySelected = selectedPositions.filter((pos) =>
+      correctPositionsForChord.some((correct) => correct.fret === pos.fret && correct.string === pos.string)
+    );
+    const incorrectlySelected = selectedPositions.filter(
+      (pos) => !correctPositionsForChord.some((correct) => correct.fret === pos.fret && correct.string === pos.string)
+    );
+    const missedCorrect = correctPositionsForChord.filter(
+      (correct) => !selectedPositions.some((pos) => pos.fret === correct.fret && pos.string === correct.string)
+    );
+
+    setFeedbackPositions({
+      correct: [...correctlySelected, ...missedCorrect],
+      incorrect: incorrectlySelected,
+    });
+
     handleAnswer({
       isCorrect,
       userAnswer: `${selectedPositions.length} selected`,
-      correctAnswer: `${correctPositions.length} notes`,
+      correctAnswer: `${correctPositionsForChord.length} notes`,
     });
   }, [currentQuestion.correctPositions, selectedPositions, status]);
 
@@ -395,6 +438,7 @@ const QuizActiveView = ({ mode }: { mode: QuizMode }) => {
         setFeedback(null);
         setSelectedOption(null);
         setSelectedPositions([]);
+        setFeedbackPositions({ correct: [], incorrect: [] });
         const nextIndex = questionIndex + 1;
         if (nextIndex >= questions.length) {
           completeQuiz(nextIndex, {
@@ -497,14 +541,25 @@ const QuizActiveView = ({ mode }: { mode: QuizMode }) => {
           fretRange={12}
           showNoteNames={false}
           highlightedPositions={
-            mode === "mark-chord"
-              ? [currentQuestion.position]
-              : currentQuestion.referencePosition
-                ? [currentQuestion.position, currentQuestion.referencePosition]
-                : [currentQuestion.position]
+            // find-note: no highlights - user must find the note
+            // name-note: highlight the position - user identifies the note name
+            // mark-chord: no highlights - user marks chord tones
+            // recognize-interval: highlight both positions - user identifies interval
+            mode === "find-note"
+              ? []
+              : mode === "name-note"
+                ? [currentQuestion.position]
+                : mode === "mark-chord"
+                  ? []
+                  : currentQuestion.referencePosition
+                    ? [currentQuestion.position, currentQuestion.referencePosition]
+                    : [currentQuestion.position]
           }
-          selectedPositions={selectedPositions}
+          selectedPositions={status === "feedback" ? [] : selectedPositions}
+          correctPositions={feedbackPositions.correct}
+          incorrectPositions={feedbackPositions.incorrect}
           onPositionClick={handleSelectPosition}
+          disabled={status === "feedback"}
         />
       </section>
 
