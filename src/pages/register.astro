@@ -1,32 +1,18 @@
 ---
-import Layout from "../layouts/Layout.astro";
+import AuthLayout from "../layouts/AuthLayout.astro";
 import RegisterForm from "../components/auth/RegisterForm";
 ---
 
-<Layout title="Register • FretNinja">
-  <main
-    id="main-content"
-    class="flex min-h-screen items-center justify-center bg-slate-950 px-6 py-16 text-white"
-  >
-    <div class="w-full max-w-md">
-      <div class="rounded-2xl border border-white/10 bg-white/5 p-8 shadow-2xl shadow-slate-900/50">
-        <div class="space-y-2">
-          <p class="text-xs font-semibold uppercase tracking-[0.3em] text-emerald-300">Create account</p>
-          <h1 class="text-2xl font-semibold text-white">Start your fretboard journey</h1>
-          <p class="text-sm text-slate-300">
-            Register now to save progress, unlock achievements, and track your learning streaks.
-          </p>
-        </div>
+<AuthLayout
+  title="Register"
+  badge="Create account"
+  subtitle="Start your fretboard journey"
+  description="Register now to save progress, unlock achievements, and track your learning streaks."
+>
+  <RegisterForm client:idle />
 
-        <div class="mt-8">
-          <RegisterForm client:idle />
-        </div>
-
-        <p class="mt-6 text-center text-sm text-slate-400">
-          Already have an account?
-          <a href="/login" class="ml-1 text-emerald-200 hover:text-emerald-100">Log in</a>
-        </p>
-      </div>
-    </div>
-  </main>
-</Layout>
+  <p slot="footer" class="mt-6 text-center text-sm text-slate-400">
+    Already have an account?
+    <a href="/login" class="ml-1 text-emerald-200 hover:text-emerald-100">Log in</a>
+  </p>
+</AuthLayout>
