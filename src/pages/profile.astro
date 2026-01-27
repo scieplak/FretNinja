@@ -1,12 +1,14 @@
 ---
-import Layout from "../layouts/Layout.astro";
+import AppLayout from "../layouts/AppLayout.astro";
 import ProfileView from "../components/profile/ProfileView";
+
+const user = Astro.locals.user;
 ---
 
-<Layout title="Profile • FretNinja">
-  <main id="main-content" class="min-h-screen bg-slate-950 px-6 py-12 text-white">
+<AppLayout title="Profile">
+  <div class="px-6 py-12">
     <div class="mx-auto max-w-5xl">
-      <ProfileView client:visible />
+      <ProfileView client:visible user={user} />
     </div>
-  </main>
-</Layout>
+  </div>
+</AppLayout>

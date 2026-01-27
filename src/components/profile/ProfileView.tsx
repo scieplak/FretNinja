@@ -2,34 +2,38 @@ import { useEffect, useMemo, useState } from "react";
 
 import type { ProfileDTO, StatsOverviewDTO, UpdateProfileCommand } from "@/types";
 
-const getToken = () => (typeof window === "undefined" ? null : localStorage.getItem("fn_access_token"));
+interface ProfileViewProps {
+  user: { id: string; email: string } | null;
+}
 
-const ProfileView = () => {
+const ProfileView = ({ user }: ProfileViewProps) => {
+  const isGuest = !user;
+
   const [profile, setProfile] = useState<ProfileDTO | null>(null);
   const [stats, setStats] = useState<StatsOverviewDTO | null>(null);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
+  const [isLoading, setIsLoading] = useState(!isGuest);
   const [displayName, setDisplayName] = useState("");
   const [saveMessage, setSaveMessage] = useState<string | null>(null);
   const [saveError, setSaveError] = useState<string | null>(null);
   const [isSaving, setIsSaving] = useState(false);
 
   useEffect(() => {
-    let active = true;
-    const token = getToken();
-    if (!token) {
+    if (isGuest) {
       setErrorMessage("Sign in to view your profile.");
       setIsLoading(false);
       return;
     }
 
-    const headers = { Authorization: `Bearer ${token}` };
+    let active = true;
+    const fetchOptions: RequestInit = { credentials: "include" };
+
     const load = async () => {
       setIsLoading(true);
       try {
         const [profileRes, statsRes] = await Promise.all([
-          fetch("/api/profile", { headers }),
-          fetch("/api/stats/overview", { headers }),
+          fetch("/api/profile", fetchOptions),
+          fetch("/api/stats/overview", fetchOptions),
         ]);
 
         if (!active) return;
@@ -38,7 +42,7 @@ const ProfileView = () => {
         setProfile(profileData);
         setDisplayName(profileData?.display_name ?? "");
         setStats(statsRes.ok ? ((await statsRes.json()) as StatsOverviewDTO) : null);
-      } catch (error) {
+      } catch {
         if (!active) return;
         setErrorMessage("Unable to load profile right now.");
       } finally {
@@ -50,12 +54,10 @@ const ProfileView = () => {
     return () => {
       active = false;
     };
-  }, []);
+  }, [isGuest]);
 
   useEffect(() => {
-    if (!profile) return;
-    const token = getToken();
-    if (!token) return;
+    if (!profile || isGuest) return;
     if ((profile.display_name ?? "") === displayName) return;
 
     setSaveError(null);
@@ -67,7 +69,8 @@ const ProfileView = () => {
       try {
         const response = await fetch("/api/profile", {
           method: "PATCH",
-          headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
+          headers: { "Content-Type": "application/json" },
+          credentials: "include",
           body: JSON.stringify(payload),
         });
         if (!response.ok) {
@@ -77,7 +80,7 @@ const ProfileView = () => {
         setProfile(updated);
         setSaveMessage("Saved");
         setTimeout(() => setSaveMessage(null), 1500);
-      } catch (error) {
+      } catch {
         setSaveError("Unable to save display name.");
       } finally {
         setIsSaving(false);
@@ -85,7 +88,7 @@ const ProfileView = () => {
     }, 300);
 
     return () => window.clearTimeout(timeout);
-  }, [displayName, profile]);
+  }, [displayName, profile, isGuest]);
 
   const displayNameLabel = useMemo(() => {
     if (profile?.display_name) return profile.display_name;

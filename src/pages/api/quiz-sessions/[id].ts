@@ -8,7 +8,7 @@ export const prerender = false;
 export const GET: APIRoute = async ({ params, request, locals }) => {
   // Verify authentication
   const authHeader = request.headers.get('Authorization');
-  const authResult = await verifyAuth(locals.supabase, authHeader);
+  const authResult = await verifyAuth(locals.supabase, authHeader, locals.user);
 
   if (authResult.error) {
     return new Response(JSON.stringify(authResult.error.body), {
@@ -47,7 +47,7 @@ export const GET: APIRoute = async ({ params, request, locals }) => {
 export const PATCH: APIRoute = async ({ params, request, locals }) => {
   // Verify authentication
   const authHeader = request.headers.get('Authorization');
-  const authResult = await verifyAuth(locals.supabase, authHeader);
+  const authResult = await verifyAuth(locals.supabase, authHeader, locals.user);
 
   if (authResult.error) {
     return new Response(JSON.stringify(authResult.error.body), {

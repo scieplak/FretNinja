@@ -1,11 +1,14 @@
 ---
 import Layout from "./Layout.astro";
+import type { AuthUser } from "../env";
 
 interface Props {
   title: string;
+  user?: AuthUser | null;
 }
 
-const { title } = Astro.props;
+const { title, user = Astro.locals.user } = Astro.props;
+const isAuthenticated = !!user;
 ---
 
 <Layout title={`${title} • FretNinja`}>
@@ -64,12 +67,26 @@ const { title } = Astro.props;
 
         <div class="flex items-center gap-3">
           <div id="user-menu-slot">
-            <a
-              href="/login"
-              class="rounded-lg border border-white/10 bg-white/5 px-4 py-2 text-sm font-medium text-slate-300 transition hover:border-emerald-300/40 hover:text-white"
-            >
-              Sign in
-            </a>
+            {isAuthenticated ? (
+              <div class="flex items-center gap-3">
+                <span class="hidden text-sm text-slate-300 sm:inline">{user?.email}</span>
+                <form action="/api/auth/logout" method="POST">
+                  <button
+                    type="submit"
+                    class="rounded-lg border border-white/10 bg-white/5 px-4 py-2 text-sm font-medium text-slate-300 transition hover:border-rose-400/40 hover:text-white"
+                  >
+                    Sign out
+                  </button>
+                </form>
+              </div>
+            ) : (
+              <a
+                href="/login"
+                class="rounded-lg border border-white/10 bg-white/5 px-4 py-2 text-sm font-medium text-slate-300 transition hover:border-emerald-300/40 hover:text-white"
+              >
+                Sign in
+              </a>
+            )}
           </div>
           <button
             type="button"
@@ -125,6 +142,28 @@ const { title } = Astro.props;
           >
             Progress
           </a>
+          <div class="mt-2 border-t border-white/5 pt-2">
+            {isAuthenticated ? (
+              <>
+                <p class="px-4 py-2 text-xs text-slate-400">{user?.email}</p>
+                <form action="/api/auth/logout" method="POST">
+                  <button
+                    type="submit"
+                    class="w-full rounded-lg px-4 py-2.5 text-left text-sm font-medium text-rose-300 transition hover:bg-white/5 hover:text-rose-200"
+                  >
+                    Sign out
+                  </button>
+                </form>
+              </>
+            ) : (
+              <a
+                href="/login"
+                class="block rounded-lg px-4 py-2.5 text-sm font-medium text-emerald-300 transition hover:bg-white/5 hover:text-emerald-200"
+              >
+                Sign in
+              </a>
+            )}
+          </div>
         </div>
       </div>
     </header>

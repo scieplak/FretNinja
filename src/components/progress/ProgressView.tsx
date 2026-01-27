@@ -7,6 +7,10 @@ import type {
   StatsOverviewDTO,
 } from "@/types";
 
+interface ProgressViewProps {
+  user: { id: string; email: string } | null;
+}
+
 type TabKey = "heatmap" | "stats" | "history";
 
 const QUIZ_TYPE_LABELS: Record<QuizTypeEnum, string> = {
@@ -22,8 +26,6 @@ const DATE_RANGES = [
   { id: "all", label: "All time" },
 ];
 
-const getToken = () => (typeof window === "undefined" ? null : localStorage.getItem("fn_access_token"));
-
 const formatHours = (seconds?: number | null) => {
   if (!seconds) return "0.0";
   return (seconds / 3600).toFixed(1);
@@ -34,7 +36,9 @@ const formatDate = (value?: string | null) => {
   return new Date(value).toLocaleDateString(undefined, { month: "short", day: "numeric" });
 };
 
-const ProgressView = () => {
+const ProgressView = ({ user }: ProgressViewProps) => {
+  const isGuest = !user;
+
   const [tab, setTab] = useState<TabKey>("heatmap");
   const [quizType, setQuizType] = useState<QuizTypeEnum | "all">("all");
   const [dateRange, setDateRange] = useState("7");
@@ -42,7 +46,7 @@ const ProgressView = () => {
   const [heatmap, setHeatmap] = useState<HeatmapResponseDTO | null>(null);
   const [sessions, setSessions] = useState<QuizSessionListDTO | null>(null);
   const [page, setPage] = useState(1);
-  const [isLoading, setIsLoading] = useState(true);
+  const [isLoading, setIsLoading] = useState(!isGuest);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
   const buildHeatmapQuery = useCallback(() => {
@@ -60,23 +64,23 @@ const ProgressView = () => {
   }, [dateRange, quizType]);
 
   useEffect(() => {
-    let active = true;
-    const token = getToken();
-    if (!token) {
+    if (isGuest) {
       setErrorMessage("Sign in to view your progress.");
       setIsLoading(false);
       return;
     }
 
-    const headers = { Authorization: `Bearer ${token}` };
+    let active = true;
+    const fetchOptions: RequestInit = { credentials: "include" };
+
     const load = async () => {
       setIsLoading(true);
       setErrorMessage(null);
       try {
         const [statsRes, heatmapRes, sessionsRes] = await Promise.all([
-          fetch("/api/stats/overview", { headers }),
-          fetch(`/api/stats/heatmap?${buildHeatmapQuery()}`, { headers }),
-          fetch(`/api/quiz-sessions?page=${page}&limit=20`, { headers }),
+          fetch("/api/stats/overview", fetchOptions),
+          fetch(`/api/stats/heatmap?${buildHeatmapQuery()}`, fetchOptions),
+          fetch(`/api/quiz-sessions?page=${page}&limit=20`, fetchOptions),
         ]);
 
         if (!active) return;
@@ -84,7 +88,7 @@ const ProgressView = () => {
         setStats(statsRes.ok ? ((await statsRes.json()) as StatsOverviewDTO) : null);
         setHeatmap(heatmapRes.ok ? ((await heatmapRes.json()) as HeatmapResponseDTO) : null);
         setSessions(sessionsRes.ok ? ((await sessionsRes.json()) as QuizSessionListDTO) : null);
-      } catch (error) {
+      } catch {
         if (!active) return;
         setErrorMessage("Unable to load progress data. Please try again.");
       } finally {
@@ -96,7 +100,7 @@ const ProgressView = () => {
     return () => {
       active = false;
     };
-  }, [buildHeatmapQuery, page]);
+  }, [buildHeatmapQuery, page, isGuest]);
 
   const totalPages = sessions?.pagination.total_pages ?? 1;
 

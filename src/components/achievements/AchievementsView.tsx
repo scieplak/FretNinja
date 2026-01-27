@@ -2,38 +2,42 @@ import { useEffect, useMemo, useState } from "react";
 
 import type { AchievementDTO, UserAchievementsDTO } from "@/types";
 
-const getToken = () => (typeof window === "undefined" ? null : localStorage.getItem("fn_access_token"));
+interface AchievementsViewProps {
+  user: { id: string; email: string } | null;
+}
 
-const AchievementsView = () => {
+const AchievementsView = ({ user }: AchievementsViewProps) => {
+  const isGuest = !user;
+
   const [allAchievements, setAllAchievements] = useState<AchievementDTO[]>([]);
   const [userAchievements, setUserAchievements] = useState<UserAchievementsDTO | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
+  const [isLoading, setIsLoading] = useState(!isGuest);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
   useEffect(() => {
-    let active = true;
-    const token = getToken();
-    if (!token) {
+    if (isGuest) {
       setErrorMessage("Sign in to view your achievements.");
       setIsLoading(false);
       return;
     }
 
-    const headers = { Authorization: `Bearer ${token}` };
+    let active = true;
+    const fetchOptions: RequestInit = { credentials: "include" };
+
     const load = async () => {
       setIsLoading(true);
       setErrorMessage(null);
       try {
         const [allRes, userRes] = await Promise.all([
-          fetch("/api/achievements", { headers }),
-          fetch("/api/user/achievements", { headers }),
+          fetch("/api/achievements", fetchOptions),
+          fetch("/api/user/achievements", fetchOptions),
         ]);
 
         if (!active) return;
 
         setAllAchievements(allRes.ok ? ((await allRes.json()).data as AchievementDTO[]) : []);
         setUserAchievements(userRes.ok ? ((await userRes.json()) as UserAchievementsDTO) : null);
-      } catch (error) {
+      } catch {
         if (!active) return;
         setErrorMessage("Unable to load achievements right now.");
       } finally {
@@ -45,7 +49,7 @@ const AchievementsView = () => {
     return () => {
       active = false;
     };
-  }, []);
+  }, [isGuest]);
 
   const cards = useMemo(() => {
     if (!allAchievements.length) return [];

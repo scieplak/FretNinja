@@ -7,6 +7,10 @@ import type {
   UserAchievementsDTO,
 } from "@/types";
 
+interface DashboardViewProps {
+  user: { id: string; email: string } | null;
+}
+
 type DashboardData = {
   profile: ProfileDTO | null;
   stats: StatsOverviewDTO | null;
@@ -30,18 +34,33 @@ const formatDate = (value?: string | null) => {
   return date.toLocaleDateString(undefined, { month: "short", day: "numeric" });
 };
 
-const DashboardView = () => {
+const DashboardView = ({ user }: DashboardViewProps) => {
+  const isGuest = !user;
+
   const [data, setData] = useState<DashboardData>({
     profile: null,
     stats: null,
     achievements: null,
     sessions: null,
-    isGuest: false,
+    isGuest,
   });
-  const [isLoading, setIsLoading] = useState(true);
+  const [isLoading, setIsLoading] = useState(!isGuest);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
   useEffect(() => {
+    // If guest, no data to load
+    if (isGuest) {
+      setData({
+        profile: null,
+        stats: null,
+        achievements: null,
+        sessions: null,
+        isGuest: true,
+      });
+      setIsLoading(false);
+      return;
+    }
+
     let active = true;
 
     const load = async () => {
@@ -49,22 +68,10 @@ const DashboardView = () => {
       setErrorMessage(null);
 
       try {
-        const token = typeof window === "undefined" ? null : localStorage.getItem("fn_access_token");
-        if (!token) {
-          if (!active) return;
-          setData({
-            profile: null,
-            stats: null,
-            achievements: null,
-            sessions: null,
-            isGuest: true,
-          });
-          setIsLoading(false);
-          return;
-        }
+        // Use credentials: "include" to send cookies for auth
+        const fetchOptions: RequestInit = { credentials: "include" };
 
-        const authHeaders = { Authorization: `Bearer ${token}` };
-        const profileResponse = await fetch("/api/profile", { headers: authHeaders });
+        const profileResponse = await fetch("/api/profile", fetchOptions);
         if (profileResponse.status === 401 || profileResponse.status === 403) {
           if (!active) return;
           setData({
@@ -84,9 +91,9 @@ const DashboardView = () => {
 
         const profile = (await profileResponse.json()) as ProfileDTO;
         const [stats, achievements, sessions] = await Promise.all([
-          fetch("/api/stats/overview", { headers: authHeaders }).then((res) => (res.ok ? res.json() : null)),
-          fetch("/api/user/achievements", { headers: authHeaders }).then((res) => (res.ok ? res.json() : null)),
-          fetch("/api/quiz-sessions?limit=5", { headers: authHeaders }).then((res) => (res.ok ? res.json() : null)),
+          fetch("/api/stats/overview", fetchOptions).then((res) => (res.ok ? res.json() : null)),
+          fetch("/api/user/achievements", fetchOptions).then((res) => (res.ok ? res.json() : null)),
+          fetch("/api/quiz-sessions?limit=5", fetchOptions).then((res) => (res.ok ? res.json() : null)),
         ]);
 
         if (!active) return;
@@ -98,7 +105,7 @@ const DashboardView = () => {
           sessions: sessions as QuizSessionListDTO | null,
           isGuest: false,
         });
-      } catch (error) {
+      } catch {
         if (!active) return;
         setErrorMessage("We couldn't load your dashboard right now. Please try again.");
       } finally {
@@ -113,7 +120,7 @@ const DashboardView = () => {
     return () => {
       active = false;
     };
-  }, []);
+  }, [isGuest]);
 
   const displayName = useMemo(() => {
     if (data.profile?.display_name) {

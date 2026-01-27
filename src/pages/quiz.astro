@@ -1,12 +1,12 @@
 ---
-import Layout from "../layouts/Layout.astro";
+import AppLayout from "../layouts/AppLayout.astro";
 import QuizHub from "../components/quiz/QuizHub";
 ---
 
-<Layout title="Quiz Hub • FretNinja">
-  <main id="main-content" class="min-h-screen bg-slate-950 px-6 py-12 text-white">
+<AppLayout title="Quiz Hub">
+  <div class="px-6 py-12">
     <div class="mx-auto max-w-5xl">
       <QuizHub client:load />
     </div>
-  </main>
-</Layout>
+  </div>
+</AppLayout>

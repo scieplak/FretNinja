@@ -1,6 +1,7 @@
 import type { SupabaseClient } from '@supabase/supabase-js';
 import type { Database } from '../../db/database.types';
 import type { ApiErrorDTO } from '../../types';
+import type { AuthUser } from '../../env';
 
 type SupabaseClientType = SupabaseClient<Database>;
 
@@ -28,11 +29,19 @@ export function extractBearerToken(authHeader: string | null): string | null {
 
 /**
  * Verify user is authenticated and return user ID
+ * Supports both cookie-based auth (via locals.user) and token-based auth (via Authorization header)
  */
 export async function verifyAuth(
   supabase: SupabaseClientType,
-  authHeader: string | null
+  authHeader: string | null,
+  localsUser?: AuthUser | null
 ): Promise<AuthCheckResult> {
+  // First, check if user is already authenticated via cookies (set by middleware)
+  if (localsUser) {
+    return { userId: localsUser.id };
+  }
+
+  // Fall back to Authorization header token
   const token = extractBearerToken(authHeader);
 
   if (!token) {

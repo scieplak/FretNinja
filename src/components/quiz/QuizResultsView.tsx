@@ -1,5 +1,10 @@
 import { useEffect, useMemo, useState } from "react";
 
+interface QuizResultsViewProps {
+  mode: string;
+  user: { id: string; email: string } | null;
+}
+
 type ResultsPayload = {
   mode: string;
   difficulty: string;
@@ -30,17 +35,15 @@ const formatTime = (seconds: number) => {
   return `${mins}:${secs.toString().padStart(2, "0")}`;
 };
 
-const QuizResultsView = ({ mode }: { mode: string }) => {
+const QuizResultsView = ({ mode, user }: QuizResultsViewProps) => {
   const [results, setResults] = useState<ResultsPayload | null>(null);
-  const [isGuest, setIsGuest] = useState(false);
+  const isGuest = !user;
 
   useEffect(() => {
     const stored = sessionStorage.getItem("fn_quiz_results");
     if (stored) {
       setResults(JSON.parse(stored) as ResultsPayload);
     }
-    const token = localStorage.getItem("fn_access_token");
-    setIsGuest(!token);
   }, []);
 
   const missedQuestions = useMemo(() => {

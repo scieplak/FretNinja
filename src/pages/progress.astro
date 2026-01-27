@@ -1,12 +1,14 @@
 ---
-import Layout from "../layouts/Layout.astro";
+import AppLayout from "../layouts/AppLayout.astro";
 import ProgressView from "../components/progress/ProgressView";
+
+const user = Astro.locals.user;
 ---
 
-<Layout title="Progress • FretNinja">
-  <main id="main-content" class="min-h-screen bg-slate-950 px-6 py-12 text-white">
+<AppLayout title="Progress">
+  <div class="px-6 py-12">
     <div class="mx-auto max-w-6xl">
-      <ProgressView client:visible />
+      <ProgressView client:visible user={user} />
     </div>
-  </main>
-</Layout>
+  </div>
+</AppLayout>

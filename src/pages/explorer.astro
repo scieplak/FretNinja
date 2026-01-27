@@ -1,12 +1,12 @@
 ---
-import Layout from "../layouts/Layout.astro";
+import AppLayout from "../layouts/AppLayout.astro";
 import ExplorerView from "../components/explorer/ExplorerView";
 ---
 
-<Layout title="Explorer • FretNinja">
-  <main id="main-content" class="min-h-screen bg-slate-950 px-6 py-12 text-white">
+<AppLayout title="Explorer">
+  <div class="px-6 py-12">
     <div class="mx-auto max-w-6xl">
       <ExplorerView client:load />
     </div>
-  </main>
-</Layout>
+  </div>
+</AppLayout>

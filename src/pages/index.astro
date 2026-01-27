@@ -1,5 +1,12 @@
 ---
 import Layout from "../layouts/Layout.astro";
+
+const user = Astro.locals.user;
+
+// Redirect authenticated users to dashboard
+if (user) {
+  return Astro.redirect("/dashboard");
+}
 ---
 
 <Layout title="FretNinja • Learn the fretboard">

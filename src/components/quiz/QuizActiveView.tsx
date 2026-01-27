@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 
 import type {
   NoteEnum,
@@ -35,6 +35,11 @@ const MODE_LABELS: Record<QuizMode, string> = {
   "recognize-interval": "Recognize the Interval",
 };
 
+interface QuizActiveViewProps {
+  mode: QuizMode;
+  user: { id: string; email: string } | null;
+}
+
 const QUIZ_TYPE_MAP: Record<QuizMode, QuizTypeEnum> = {
   "find-note": "find_note",
   "name-note": "name_note",
@@ -43,8 +48,6 @@ const QUIZ_TYPE_MAP: Record<QuizMode, QuizTypeEnum> = {
 };
 
 const toQuizTypeEnum = (mode: QuizMode): QuizTypeEnum => QUIZ_TYPE_MAP[mode];
-
-const getToken = () => (typeof window === "undefined" ? null : localStorage.getItem("fn_access_token"));
 
 const NOTES: NoteEnum[] = ["C", "C#", "D", "D#", "E", "F", "F#", "G", "G#", "A", "A#", "B"];
 
@@ -126,7 +129,9 @@ const buildQuestions = (mode: QuizMode, difficulty: Difficulty): Question[] => {
 
 const formatIntervalLabel = (value: string) => value.replace("_", " ");
 
-const QuizActiveView = ({ mode }: { mode: QuizMode }) => {
+const QuizActiveView = ({ mode, user }: QuizActiveViewProps) => {
+  const isGuest = !user;
+
   const [difficulty, setDifficulty] = useState<Difficulty>("easy");
   const [questions, setQuestions] = useState<Question[]>(() => buildQuestions(mode, difficulty));
   const [questionIndex, setQuestionIndex] = useState(0);
@@ -139,7 +144,6 @@ const QuizActiveView = ({ mode }: { mode: QuizMode }) => {
     incorrect: FretPosition[];
   }>({ correct: [], incorrect: [] });
   const [sessionId, setSessionId] = useState<string | null>(null);
-  const [isGuest, setIsGuest] = useState(false);
   const [timeRemaining, setTimeRemaining] = useState<number | null>(null);
   const [answerLog, setAnswerLog] = useState<
     {
@@ -180,9 +184,7 @@ const QuizActiveView = ({ mode }: { mode: QuizMode }) => {
     }
     let active = true;
     const createSession = async () => {
-      const token = getToken();
-      if (!token) {
-        setIsGuest(true);
+      if (isGuest) {
         setStatus("question");
         sessionStartRef.current = Date.now();
         questionStartRef.current = Date.now();
@@ -197,13 +199,13 @@ const QuizActiveView = ({ mode }: { mode: QuizMode }) => {
         };
         const response = await fetch("/api/quiz-sessions", {
           method: "POST",
-          headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
+          headers: { "Content-Type": "application/json" },
+          credentials: "include",
           body: JSON.stringify(payload),
         });
 
         if (!response.ok) {
           if (!active) return;
-          setIsGuest(true);
           setStatus("question");
           sessionStartRef.current = Date.now();
           questionStartRef.current = Date.now();
@@ -216,9 +218,9 @@ const QuizActiveView = ({ mode }: { mode: QuizMode }) => {
         sessionStartRef.current = Date.now();
         questionStartRef.current = Date.now();
         setStatus("question");
-      } catch (error) {
+      } catch {
         if (!active) return;
-        setIsGuest(true);
+        // Failed to create session, continue as guest mode
         setStatus("question");
         sessionStartRef.current = Date.now();
         questionStartRef.current = Date.now();
@@ -230,7 +232,7 @@ const QuizActiveView = ({ mode }: { mode: QuizMode }) => {
     return () => {
       active = false;
     };
-  }, [difficulty, isInitialized, mode]);
+  }, [difficulty, isGuest, isInitialized, mode]);
 
   useEffect(() => {
     if (status !== "question" || difficulty !== "hard") {
@@ -377,7 +379,6 @@ const QuizActiveView = ({ mode }: { mode: QuizMode }) => {
       }
       const timeTakenMs = Date.now() - questionStartRef.current;
       const questionNumber = questionIndex + 1;
-      const token = getToken();
 
       const answerPayload: CreateQuizAnswerCommand = {
         question_number: questionNumber,
@@ -412,10 +413,11 @@ const QuizActiveView = ({ mode }: { mode: QuizMode }) => {
         }
       }
 
-      if (sessionId && token) {
+      if (sessionId && !isGuest) {
         fetch(`/api/quiz-sessions/${sessionId}/answers`, {
           method: "POST",
-          headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
+          headers: { "Content-Type": "application/json" },
+          credentials: "include",
           body: JSON.stringify(answerPayload),
         }).catch(() => null);
       }
@@ -455,7 +457,7 @@ const QuizActiveView = ({ mode }: { mode: QuizMode }) => {
         }
       }, 1500);
     },
-    [currentQuestion, mode, questionIndex, questions.length, selectedPositions, sessionId]
+    [currentQuestion, isGuest, mode, questionIndex, questions.length, selectedPositions, sessionId]
   );
 
   const completeQuiz = useCallback(
@@ -473,17 +475,17 @@ const QuizActiveView = ({ mode }: { mode: QuizMode }) => {
       const timeTakenSeconds = sessionStartRef.current
         ? Math.round((Date.now() - sessionStartRef.current) / 1000)
         : 0;
-      const token = getToken();
       let achievements: { id: string; display_name: string }[] = [];
 
-      if (sessionId && token) {
+      if (sessionId && !isGuest) {
         const payload: UpdateQuizSessionCommand = {
           status: "completed",
           time_taken_seconds: timeTakenSeconds,
         };
         const response = await fetch(`/api/quiz-sessions/${sessionId}`, {
           method: "PATCH",
-          headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
+          headers: { "Content-Type": "application/json" },
+          credentials: "include",
           body: JSON.stringify(payload),
         });
         if (response.ok) {
@@ -506,7 +508,7 @@ const QuizActiveView = ({ mode }: { mode: QuizMode }) => {
       setStatus("completed");
       window.location.href = `/quiz/${mode}/results`;
     },
-    [answerLog, currentQuestion.prompt, difficulty, mode, sessionId]
+    [answerLog, currentQuestion.prompt, difficulty, isGuest, mode, sessionId]
   );
 
   if (status === "loading") {

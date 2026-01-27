@@ -2,9 +2,13 @@ import { useCallback, useEffect, useState } from "react";
 
 import type { ProfileDTO, UpdateProfileCommand } from "@/types";
 
-const getToken = () => (typeof window === "undefined" ? null : localStorage.getItem("fn_access_token"));
+interface SettingsViewProps {
+  user: { id: string; email: string } | null;
+}
 
-const SettingsView = () => {
+const SettingsView = ({ user }: SettingsViewProps) => {
+  const isGuest = !user;
+
   const [profile, setProfile] = useState<ProfileDTO | null>(null);
   const [displayName, setDisplayName] = useState("");
   const [fretRange, setFretRange] = useState<12 | 24>(12);
@@ -12,7 +16,6 @@ const SettingsView = () => {
   const [masterVolume, setMasterVolume] = useState(80);
   const [noteSounds, setNoteSounds] = useState(true);
   const [feedbackSounds, setFeedbackSounds] = useState(true);
-  const [isGuest, setIsGuest] = useState(false);
   const [saveMessage, setSaveMessage] = useState<string | null>(null);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
@@ -51,17 +54,13 @@ const SettingsView = () => {
   }, [feedbackSounds, fretRange, masterVolume, noteSounds, showNoteNames]);
 
   useEffect(() => {
-    let active = true;
-    const token = getToken();
-    if (!token) {
-      setIsGuest(true);
-      return;
-    }
+    if (isGuest) return;
 
+    let active = true;
     const load = async () => {
       try {
         const response = await fetch("/api/profile", {
-          headers: { Authorization: `Bearer ${token}` },
+          credentials: "include",
         });
         if (!response.ok) {
           throw new Error("profile");
@@ -72,9 +71,8 @@ const SettingsView = () => {
         setDisplayName(data.display_name ?? "");
         if (data.fretboard_range === 24) setFretRange(24);
         if (typeof data.show_note_names === "boolean") setShowNoteNames(data.show_note_names);
-      } catch (error) {
-        if (!active) return;
-        setIsGuest(true);
+      } catch {
+        // Profile load failed, component will show guest state
       }
     };
 
@@ -82,16 +80,16 @@ const SettingsView = () => {
     return () => {
       active = false;
     };
-  }, []);
+  }, [isGuest]);
 
   const saveProfile = useCallback(
     async (updates: UpdateProfileCommand) => {
-      const token = getToken();
-      if (!token) return;
+      if (isGuest) return;
       try {
         const response = await fetch("/api/profile", {
           method: "PATCH",
-          headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
+          headers: { "Content-Type": "application/json" },
+          credentials: "include",
           body: JSON.stringify(updates),
         });
         if (!response.ok) {
@@ -101,12 +99,12 @@ const SettingsView = () => {
         setProfile(data);
         setSaveMessage("Saved");
         setTimeout(() => setSaveMessage(null), 1500);
-      } catch (error) {
+      } catch {
         setErrorMessage("Unable to save changes.");
         setTimeout(() => setErrorMessage(null), 2000);
       }
     },
-    []
+    [isGuest]
   );
 
   useEffect(() => {

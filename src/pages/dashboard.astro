@@ -1,12 +1,14 @@
 ---
-import Layout from "../layouts/Layout.astro";
+import AppLayout from "../layouts/AppLayout.astro";
 import DashboardView from "../components/dashboard/DashboardView";
+
+const user = Astro.locals.user;
 ---
 
-<Layout title="Dashboard • FretNinja">
-  <main id="main-content" class="min-h-screen bg-slate-950 px-6 py-12 text-white">
+<AppLayout title="Dashboard">
+  <div class="px-6 py-12">
     <div class="mx-auto max-w-6xl">
-      <DashboardView client:visible />
+      <DashboardView client:visible user={user} />
     </div>
-  </main>
-</Layout>
+  </div>
+</AppLayout>

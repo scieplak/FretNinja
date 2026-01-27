@@ -9,9 +9,9 @@ import { verifyAuth } from '../../../lib/helpers/auth.helper';
 export const prerender = false;
 
 export const POST: APIRoute = async ({ request, locals }) => {
-  // Verify authentication
+  // Verify authentication (supports both cookie and token auth)
   const authHeader = request.headers.get('Authorization');
-  const authResult = await verifyAuth(locals.supabase, authHeader);
+  const authResult = await verifyAuth(locals.supabase, authHeader, locals.user);
 
   if (authResult.error) {
     return new Response(JSON.stringify(authResult.error.body), {
@@ -62,9 +62,9 @@ export const POST: APIRoute = async ({ request, locals }) => {
 };
 
 export const GET: APIRoute = async ({ request, locals, url }) => {
-  // Verify authentication
+  // Verify authentication (supports both cookie and token auth)
   const authHeader = request.headers.get('Authorization');
-  const authResult = await verifyAuth(locals.supabase, authHeader);
+  const authResult = await verifyAuth(locals.supabase, authHeader, locals.user);
 
   if (authResult.error) {
     return new Response(JSON.stringify(authResult.error.body), {
