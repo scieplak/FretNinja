@@ -1,4 +1,4 @@
-import type { Page, Locator } from '@playwright/test';
+import type { Page, Locator } from "@playwright/test";
 
 /**
  * Base Page Object class providing common functionality
@@ -20,7 +20,7 @@ export abstract class BasePage {
    * Wait for the page to be fully loaded
    */
   async waitForPageLoad(): Promise<void> {
-    await this.page.waitForLoadState('networkidle');
+    await this.page.waitForLoadState("networkidle");
   }
 
   /**
@@ -33,10 +33,7 @@ export abstract class BasePage {
   /**
    * Get element by role
    */
-  getByRole(
-    role: Parameters<Page['getByRole']>[0],
-    options?: Parameters<Page['getByRole']>[1]
-  ): Locator {
+  getByRole(role: Parameters<Page["getByRole"]>[0], options?: Parameters<Page["getByRole"]>[1]): Locator {
     return this.page.getByRole(role, options);
   }
 
@@ -52,5 +49,19 @@ export abstract class BasePage {
    */
   async takeScreenshot(name: string): Promise<Buffer> {
     return this.page.screenshot({ path: `screenshots/${name}.png` });
+  }
+
+  /**
+   * Wait for URL to match pattern
+   */
+  async waitForURL(pattern: string | RegExp, options?: { timeout?: number }): Promise<void> {
+    await this.page.waitForURL(pattern, options);
+  }
+
+  /**
+   * Get current URL
+   */
+  getCurrentURL(): string {
+    return this.page.url();
   }
 }

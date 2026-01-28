@@ -1,5 +1,5 @@
-import type { Page, Locator } from '@playwright/test';
-import { BasePage } from './BasePage';
+import type { Page, Locator } from "@playwright/test";
+import { BasePage } from "./BasePage";
 
 /**
  * Page Object for the Home page
@@ -7,20 +7,24 @@ import { BasePage } from './BasePage';
 export class HomePage extends BasePage {
   // Locators
   readonly heading: Locator;
-  readonly startQuizButton: Locator;
-  readonly exploreFretboardLink: Locator;
+  readonly getStartedButton: Locator;
+  readonly tryAsGuestButton: Locator;
+  readonly loginLink: Locator;
+  readonly featureCards: Locator;
 
   constructor(page: Page) {
     super(page);
 
     // Define locators using resilient selectors
-    this.heading = page.getByRole('heading', { level: 1 });
-    this.startQuizButton = page.getByRole('button', { name: /start|quiz/i });
-    this.exploreFretboardLink = page.getByRole('link', { name: /explore|fretboard/i });
+    this.heading = page.getByRole("heading", { level: 1 });
+    this.getStartedButton = page.getByRole("link", { name: /get started free/i });
+    this.tryAsGuestButton = page.getByRole("link", { name: /try as guest/i });
+    this.loginLink = page.getByRole("link", { name: /log in/i });
+    this.featureCards = page.locator("div.rounded-2xl.border.p-6");
   }
 
   async goto(): Promise<void> {
-    await this.page.goto('/');
+    await this.page.goto("/");
     await this.waitForPageLoad();
   }
 
@@ -28,11 +32,19 @@ export class HomePage extends BasePage {
     return this.page.title();
   }
 
-  async clickStartQuiz(): Promise<void> {
-    await this.startQuizButton.click();
+  async clickGetStarted(): Promise<void> {
+    await this.getStartedButton.click();
   }
 
-  async clickExploreFretboard(): Promise<void> {
-    await this.exploreFretboardLink.click();
+  async clickTryAsGuest(): Promise<void> {
+    await this.tryAsGuestButton.click();
+  }
+
+  async clickLogin(): Promise<void> {
+    await this.loginLink.click();
+  }
+
+  async getFeatureCount(): Promise<number> {
+    return this.featureCards.count();
   }
 }
