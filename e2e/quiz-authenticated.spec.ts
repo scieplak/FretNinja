@@ -187,20 +187,31 @@ test.describe("Authenticated Quiz Flow", () => {
           await quizActivePage.waitForQuestion();
 
           // Different answer strategies based on quiz type
-          if (type === "find_note" || type === "mark_chord") {
+          if (type === "find_note") {
             await quizActivePage.clickFretboardPosition(3, 5);
+          } else if (type === "mark_chord") {
+            // Select 3 positions for chord
+            await quizActivePage.clickFretboardPosition(3, 5);
+            await quizActivePage.clickFretboardPosition(4, 5);
+            await quizActivePage.clickFretboardPosition(5, 5);
+            // Submit chord answer
+            await quizActivePage.submitAnswer();
           } else {
-            // name_note or recognize_interval - click first option
+            // name_note or recognize_interval - click first option then submit
             const firstOption = quizActivePage.answerOptions.first();
             if (await firstOption.isVisible()) {
               await firstOption.click();
+              // Submit the selected answer
+              await quizActivePage.submitAnswer();
             } else {
               await quizActivePage.clickFretboardPosition(3, 5);
             }
           }
 
-          await page.waitForTimeout(500);
-          if (await quizActivePage.nextButton.isVisible()) {
+          // Wait for feedback animation (1.5s) and auto-advance
+          await page.waitForTimeout(2000);
+          // Check if there's a next button (some modes might have one)
+          if (await quizActivePage.nextButton.isVisible().catch(() => false)) {
             await quizActivePage.clickNext();
           }
         }

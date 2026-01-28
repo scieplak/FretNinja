@@ -520,25 +520,39 @@ const QuizActiveView = ({ mode, user }: QuizActiveViewProps) => {
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6" data-testid="quiz-active-view">
       <header className="flex flex-wrap items-center justify-between gap-4">
         <div>
-          <p className="text-xs font-semibold uppercase tracking-[0.3em] text-emerald-300">{MODE_LABELS[mode]}</p>
-          <h1 className="text-2xl font-semibold text-white">{currentQuestion.prompt}</h1>
+          <a
+            href="/quiz"
+            data-testid="quiz-abandon-button"
+            className="mb-2 inline-flex items-center gap-1 text-xs text-slate-400 hover:text-emerald-300 transition"
+          >
+            ← Back to quiz hub
+          </a>
+          <p className="text-xs font-semibold uppercase tracking-[0.3em] text-emerald-300" data-testid="quiz-mode-label">{MODE_LABELS[mode]}</p>
+          <h1 className="text-2xl font-semibold text-white" data-testid="quiz-question-prompt">{currentQuestion.prompt}</h1>
         </div>
-        <div className="rounded-full border border-white/10 bg-white/5 px-4 py-2 text-sm text-slate-200">
+        <div className="rounded-full border border-white/10 bg-white/5 px-4 py-2 text-sm text-slate-200" data-testid="quiz-question-counter">
           Question {questionIndex + 1} of {questions.length}
         </div>
       </header>
 
       {difficulty === "hard" && timeRemaining !== null ? (
-        <div className="flex items-center justify-between rounded-xl border border-rose-500/30 bg-rose-500/10 px-4 py-3 text-sm text-rose-200">
+        <div
+          className={`flex items-center justify-between rounded-xl border px-4 py-3 text-sm transition-all ${
+            timeRemaining <= 5
+              ? "warning border-red-500/60 bg-red-500/20 text-red-200 animate-pulse"
+              : "border-rose-500/30 bg-rose-500/10 text-rose-200"
+          }`}
+          data-testid="quiz-timer"
+        >
           <span>Timer</span>
-          <span className="font-semibold">{timeRemaining}s left</span>
+          <span className={`font-semibold ${timeRemaining <= 5 ? "text-red-400" : ""}`} data-testid="quiz-timer-value">{timeRemaining}s left</span>
         </div>
       ) : null}
 
-      <section className="rounded-2xl border border-white/10 bg-white/5 p-6">
+      <section className="rounded-2xl border border-white/10 bg-white/5 p-6" data-testid="quiz-fretboard-section">
         <Fretboard
           fretRange={12}
           showNoteNames={false}
@@ -566,14 +580,15 @@ const QuizActiveView = ({ mode, user }: QuizActiveViewProps) => {
       </section>
 
       {mode === "name-note" || mode === "recognize-interval" ? (
-        <section className="rounded-2xl border border-white/10 bg-white/5 p-6">
+        <section className="rounded-2xl border border-white/10 bg-white/5 p-6" data-testid="quiz-answer-options-section">
           <h2 className="text-sm font-semibold text-white">Choose your answer</h2>
-          <div className="mt-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+          <div className="mt-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-4" data-testid="quiz-answer-options">
             {currentQuestion.options?.map((option) => (
               <button
                 key={option}
                 type="button"
                 onClick={() => handleOptionSelect(option)}
+                data-testid={`quiz-answer-option-${option}`}
                 className={`rounded-lg border px-4 py-3 text-sm transition ${
                   selectedOption === option
                     ? "border-emerald-400/60 bg-emerald-400/10 text-emerald-100"
@@ -588,6 +603,7 @@ const QuizActiveView = ({ mode, user }: QuizActiveViewProps) => {
             type="button"
             onClick={submitOptionAnswer}
             disabled={!selectedOption}
+            data-testid="quiz-submit-answer-button"
             className="mt-4 rounded-lg bg-emerald-400 px-4 py-2 text-sm font-semibold text-slate-900 disabled:cursor-not-allowed disabled:bg-slate-700"
           >
             Submit answer
@@ -596,17 +612,18 @@ const QuizActiveView = ({ mode, user }: QuizActiveViewProps) => {
       ) : null}
 
       {mode === "mark-chord" ? (
-        <section className="rounded-2xl border border-white/10 bg-white/5 p-6">
+        <section className="rounded-2xl border border-white/10 bg-white/5 p-6" data-testid="quiz-mark-chord-section">
           <div className="flex items-center justify-between">
             <div>
               <h2 className="text-sm font-semibold text-white">Mark the chord notes</h2>
-              <p className="text-xs text-slate-300">
+              <p className="text-xs text-slate-300" data-testid="quiz-chord-selection-count">
                 {selectedPositions.length}/{currentQuestion.correctPositions?.length ?? 0} notes selected
               </p>
             </div>
             <button
               type="button"
               onClick={submitChordAnswer}
+              data-testid="quiz-submit-chord-button"
               className="rounded-lg bg-emerald-400 px-4 py-2 text-sm font-semibold text-slate-900"
             >
               Submit chord
@@ -618,6 +635,7 @@ const QuizActiveView = ({ mode, user }: QuizActiveViewProps) => {
       {feedback ? (
         <div
           aria-live="polite"
+          data-testid={feedback.correct ? "quiz-feedback-correct" : "quiz-feedback-incorrect"}
           className={`rounded-2xl border px-4 py-3 text-sm ${
             feedback.correct
               ? "border-emerald-400/40 bg-emerald-400/10 text-emerald-100"
@@ -629,7 +647,7 @@ const QuizActiveView = ({ mode, user }: QuizActiveViewProps) => {
       ) : null}
 
       {isGuest ? (
-        <p className="text-xs text-slate-400">
+        <p className="text-xs text-slate-400" data-testid="quiz-guest-warning">
           You're playing as a guest. Results won't be saved to your account.
         </p>
       ) : null}

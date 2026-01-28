@@ -31,18 +31,18 @@ test.describe("Fretboard Explorer", () => {
     test("should toggle fretboard range between 12 and 24 frets", async ({ explorerPage, page }) => {
       await explorerPage.goto();
 
-      // Get initial fret count
-      const initialFrets = await page.locator("[data-fret]").count();
+      // Get initial fret range from button text
+      const initialRange = await explorerPage.getCurrentFretRange();
 
       await explorerPage.toggleFretRange();
 
       // Wait for re-render
       await page.waitForTimeout(500);
 
-      const newFrets = await page.locator("[data-fret]").count();
+      const newRange = await explorerPage.getCurrentFretRange();
 
-      // Fret count should change
-      expect(newFrets).not.toBe(initialFrets);
+      // Fret range should change (12 -> 24 or 24 -> 12)
+      expect(newRange).not.toBe(initialRange);
     });
 
     test("should display fretboard correctly", async ({ explorerPage }) => {

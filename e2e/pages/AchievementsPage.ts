@@ -29,36 +29,32 @@ export class AchievementsPage extends BasePage {
   constructor(page: Page) {
     super(page);
 
-    // All achievement cards are divs with rounded-2xl class
-    this.achievementCards = page.locator("div.rounded-2xl.border.p-6");
+    // All achievement cards using data-testid
+    this.achievementCards = page.locator("[data-testid^='achievement-card-']");
 
-    // Earned achievements have emerald styling
-    this.earnedAchievements = page.locator("div.rounded-2xl.border-emerald-400\\/40");
+    // Earned achievements by data-status attribute
+    this.earnedAchievements = page.locator("[data-testid^='achievement-card-'][data-status='earned']");
 
-    // Progress achievements have progress bars
-    this.progressAchievements = page.locator("div.rounded-2xl").filter({
-      has: page.locator("div.h-2.overflow-hidden"),
-    });
+    // Progress achievements by data-status attribute
+    this.progressAchievements = page.locator("[data-testid^='achievement-card-'][data-status='progress']");
 
-    // Locked achievements have "Locked" text
-    this.lockedAchievements = page.locator("div.rounded-2xl").filter({
-      hasText: /locked/i,
-    });
+    // Locked achievements by data-status attribute
+    this.lockedAchievements = page.locator("[data-testid^='achievement-card-'][data-status='locked']");
 
-    // Progress bars are the h-2 divs with bg-emerald-400
-    this.progressBars = page.locator("div.h-2.overflow-hidden.rounded-full");
+    // Progress bars using data-testid
+    this.progressBars = page.locator("[data-testid^='achievement-progress-bar-']");
 
-    // Earned badges
-    this.earnedBadges = page.getByText(/^earned$/i);
-    this.newBadges = page.getByText(/^new$/i);
+    // Earned badges using data-testid
+    this.earnedBadges = page.locator("[data-testid^='achievement-earned-badge-']");
+    this.newBadges = page.locator("[data-testid^='achievement-new-badge-']");
 
     // Error and loading states
-    this.errorMessage = page.locator("div.border-rose-500\\/40");
-    this.loadingMessage = page.getByText(/loading achievements/i);
+    this.errorMessage = page.getByTestId("achievements-error-message");
+    this.loadingMessage = page.getByTestId("achievements-loading");
 
-    // For compatibility with tab-based tests
-    this.earnedAchievementsList = this.earnedAchievements;
-    this.progressAchievementsList = this.progressAchievements;
+    // Grid container
+    this.earnedAchievementsList = page.getByTestId("achievements-grid");
+    this.progressAchievementsList = page.getByTestId("achievements-grid");
   }
 
   async goto(): Promise<void> {

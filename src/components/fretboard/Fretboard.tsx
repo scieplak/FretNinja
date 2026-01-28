@@ -84,7 +84,7 @@ const Fretboard = ({
   const strings = [1, 2, 3, 4, 5, 6]; // High E to Low E (top to bottom, like tablature)
 
   return (
-    <div className="rounded-2xl border border-white/10 bg-gradient-to-b from-amber-950/40 to-amber-900/20 p-4 overflow-x-auto">
+    <div className="rounded-2xl border border-white/10 bg-gradient-to-b from-amber-950/40 to-amber-900/20 p-4 overflow-x-auto" data-testid="fretboard">
       {/* Fret numbers */}
       <div className="flex mb-1 ml-12">
         {frets.map((fret) => (
@@ -178,14 +178,19 @@ const Fretboard = ({
                         type="button"
                         onClick={() => onPositionClick?.(position)}
                         disabled={disabled}
+                        data-testid={`fretboard-position-s${position.string}-f${position.fret}`}
+                        data-note={position.note}
+                        data-string={position.string}
+                        data-fret={position.fret}
+                        data-feedback={isCorrect ? "correct" : isIncorrect ? "incorrect" : undefined}
                         className={`
                           relative w-7 h-7 rounded-full flex items-center justify-center
                           text-[0.6rem] font-semibold transition-all duration-150
                           ${
                             isCorrect
-                              ? "bg-emerald-500 text-white shadow-lg shadow-emerald-500/50 scale-110"
+                              ? "correct bg-emerald-500 text-white shadow-lg shadow-emerald-500/50 scale-110"
                               : isIncorrect
-                                ? "bg-rose-500 text-white shadow-lg shadow-rose-500/50 scale-110"
+                                ? "incorrect bg-rose-500 text-white shadow-lg shadow-rose-500/50 scale-110"
                                 : isSelected
                                   ? "bg-purple-500 text-white shadow-lg shadow-purple-500/50 scale-105"
                                   : isHighlighted

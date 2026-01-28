@@ -28,20 +28,21 @@ export class QuizHubPage extends BasePage {
   constructor(page: Page) {
     super(page);
 
-    // Quiz type selection
-    this.findNoteButton = page.getByRole("button", { name: /find.*note/i });
-    this.nameNoteButton = page.getByRole("button", { name: /name.*note/i });
-    this.markChordButton = page.getByRole("button", { name: /mark.*chord/i });
-    this.recognizeIntervalButton = page.getByRole("button", { name: /recognize.*interval/i });
+    // Quiz type selection - uses role="radio" in the component
+    this.findNoteButton = page.getByRole("radio", { name: /find.*note/i });
+    this.nameNoteButton = page.getByRole("radio", { name: /name.*note/i });
+    this.markChordButton = page.getByRole("radio", { name: /mark.*chord/i });
+    this.recognizeIntervalButton = page.getByRole("radio", { name: /recognize.*interval/i });
 
-    // Difficulty selection
-    this.easyButton = page.getByRole("button", { name: /easy/i });
-    this.mediumButton = page.getByRole("button", { name: /medium/i });
-    this.hardButton = page.getByRole("button", { name: /hard/i });
+    // Difficulty selection - uses role="radio" in the component
+    this.easyButton = page.getByRole("radio", { name: /easy/i });
+    this.mediumButton = page.getByRole("radio", { name: /medium/i });
+    this.hardButton = page.getByRole("radio", { name: /hard/i });
 
-    // Start
+    // Start button (remains role="button")
     this.startQuizButton = page.getByRole("button", { name: /start/i });
-    this.timerWarning = page.getByText(/timer|time limit|30.*second/i);
+    // Timer warning is in the hard difficulty description
+    this.timerWarning = page.getByText(/30-second timer/i);
   }
 
   async goto(): Promise<void> {

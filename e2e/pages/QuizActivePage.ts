@@ -35,30 +35,30 @@ export class QuizActivePage extends BasePage {
   constructor(page: Page) {
     super(page);
 
-    // Question is displayed in h1 element
-    this.questionText = page.locator("h1").first();
+    // Question is displayed in h1 element with data-testid
+    this.questionText = page.getByTestId("quiz-question-prompt");
     // Question number is displayed as "Question X of Y"
-    this.questionNumber = page.getByText(/question \d+ of \d+/i);
+    this.questionNumber = page.getByTestId("quiz-question-counter");
     this.progressIndicator = page.getByRole("progressbar");
 
     // Fretboard container and notes
-    this.fretboard = page.locator(".rounded-2xl").filter({ has: page.locator("button[aria-label*='String']") });
-    this.fretboardNotes = page.locator("button[aria-label*='String']");
+    this.fretboard = page.getByTestId("quiz-fretboard-section");
+    this.fretboardNotes = page.locator("[data-testid^='fretboard-position-']");
 
-    // Timer for hard mode
-    this.timer = page.getByText(/\d+s left/);
+    // Timer for hard mode (container, not the value span)
+    this.timer = page.getByTestId("quiz-timer");
 
     // Answer option buttons (for multiple choice questions)
-    this.answerOptions = page.locator("section button").filter({ hasNot: page.getByText(/submit/i) });
+    this.answerOptions = page.getByTestId("quiz-answer-options").locator("button");
 
     // Feedback messages
-    this.correctFeedback = page.getByText(/^correct!?$/i);
-    this.incorrectFeedback = page.getByText(/^incorrect!?$/i);
+    this.correctFeedback = page.getByTestId("quiz-feedback-correct");
+    this.incorrectFeedback = page.getByTestId("quiz-feedback-incorrect");
 
     // Navigation buttons
     this.nextButton = page.getByRole("button", { name: /next|continue/i });
-    this.submitButton = page.getByRole("button", { name: /submit/i });
-    this.abandonButton = page.getByRole("link", { name: /back to dashboard/i });
+    this.submitButton = page.getByTestId("quiz-submit-answer-button");
+    this.abandonButton = page.getByTestId("quiz-abandon-button");
 
     this.currentScore = page.getByText(/score/i);
   }
@@ -84,8 +84,8 @@ export class QuizActivePage extends BasePage {
   }
 
   async clickFretboardPosition(fret: number, stringNum: number): Promise<void> {
-    // Fretboard buttons use aria-label like "String 3, fret 5, note G"
-    const note = this.page.locator(`button[aria-label*="String ${stringNum}"][aria-label*="fret ${fret}"]`);
+    // Fretboard buttons use data-testid like "fretboard-position-s3-f5"
+    const note = this.page.getByTestId(`fretboard-position-s${stringNum}-f${fret}`);
     await note.click();
   }
 
@@ -95,7 +95,9 @@ export class QuizActivePage extends BasePage {
 
   async getTimerValue(): Promise<string | null> {
     if (await this.timer.isVisible()) {
-      return this.timer.textContent();
+      // Read specifically from the value span
+      const valueSpan = this.page.getByTestId("quiz-timer-value");
+      return valueSpan.textContent();
     }
     return null;
   }
@@ -134,22 +136,19 @@ export class QuizActivePage extends BasePage {
 
   async getHighlightedPositions(): Promise<Array<{ fret: number; string: number }>> {
     // Look for buttons with amber/highlight styling (pulse animation)
-    const highlighted = this.page.locator("button[class*='animate-pulse'], button[class*='amber']");
+    const highlighted = this.page.locator("[data-testid^='fretboard-position-'][class*='animate-pulse'], [data-testid^='fretboard-position-'][class*='amber']");
     const count = await highlighted.count();
     const positions: Array<{ fret: number; string: number }> = [];
 
     for (let i = 0; i < count; i++) {
       const el = highlighted.nth(i);
-      const ariaLabel = await el.getAttribute("aria-label");
-      if (ariaLabel) {
-        const stringMatch = ariaLabel.match(/String (\d+)/);
-        const fretMatch = ariaLabel.match(/fret (\d+)/);
-        if (stringMatch && fretMatch) {
-          positions.push({
-            fret: parseInt(fretMatch[1], 10),
-            string: parseInt(stringMatch[1], 10),
-          });
-        }
+      const stringVal = await el.getAttribute("data-string");
+      const fretVal = await el.getAttribute("data-fret");
+      if (stringVal && fretVal) {
+        positions.push({
+          fret: parseInt(fretVal, 10),
+          string: parseInt(stringVal, 10),
+        });
       }
     }
 
@@ -162,6 +161,17 @@ export class QuizActivePage extends BasePage {
   }
 
   async submitAnswer(): Promise<void> {
-    await this.submitButton.click();
+    // Try the answer submit button first, then chord submit button
+    const answerBtn = this.page.getByTestId("quiz-submit-answer-button");
+    const chordBtn = this.page.getByTestId("quiz-submit-chord-button");
+
+    if (await answerBtn.isVisible()) {
+      await answerBtn.click();
+    } else if (await chordBtn.isVisible()) {
+      await chordBtn.click();
+    } else {
+      // Fallback to the standard submit button
+      await this.submitButton.click();
+    }
   }
 }

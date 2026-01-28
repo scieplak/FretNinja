@@ -10,6 +10,7 @@ export class ExplorerPage extends BasePage {
   readonly fretboardNotes: Locator;
 
   // Root note selector (grid of note buttons)
+  readonly rootNoteSelector: Locator;
   readonly rootNoteButtons: Locator;
 
   // Pattern type selector
@@ -36,39 +37,36 @@ export class ExplorerPage extends BasePage {
   constructor(page: Page) {
     super(page);
 
-    // Fretboard container
-    this.fretboard = page.locator("div.rounded-2xl").filter({
-      has: page.locator("button[aria-label*='String']"),
-    });
-    this.fretboardNotes = page.locator("button[aria-label*='String']");
+    // Fretboard container using data-testid
+    this.fretboard = page.getByTestId("explorer-fretboard-container");
+    this.fretboardNotes = page.locator("[data-testid^='fretboard-position-']");
 
-    // Root note buttons in the aside panel
-    this.rootNoteButtons = page.locator("aside button").filter({
-      hasText: /^[A-G]#?$/,
-    });
+    // Root note selector using data-testid
+    this.rootNoteSelector = page.getByTestId("explorer-root-note-section");
+    this.rootNoteButtons = page.getByTestId("explorer-root-note-grid").locator("button");
 
-    // Pattern type buttons
-    this.scalesButton = page.getByRole("button", { name: /^scales$/i });
-    this.chordsButton = page.getByRole("button", { name: /^chords$/i });
+    // Pattern type buttons using data-testid
+    this.scalesButton = page.getByTestId("explorer-scales-button");
+    this.chordsButton = page.getByTestId("explorer-chords-button");
 
-    // Scale options
-    this.scaleOptions = page.getByRole("button", { name: /major scale|natural minor|pentatonic/i });
+    // Scale options using data-testid
+    this.scaleOptions = page.getByTestId("explorer-scale-options").locator("button");
 
-    // Chord options
-    this.chordOptions = page.getByRole("button", { name: /^(major|minor|diminished|augmented)$/i });
+    // Chord options using data-testid
+    this.chordOptions = page.getByTestId("explorer-chord-options").locator("button");
 
-    // Settings toggles
-    this.fretRangeToggle = page.getByRole("button", { name: /fret range/i });
-    this.showNoteNamesToggle = page.getByRole("button", { name: /note names/i });
-    this.clearOverlayButton = page.getByRole("button", { name: /clear overlay/i });
+    // Settings toggles using data-testid
+    this.fretRangeToggle = page.getByTestId("explorer-toggle-fret-range");
+    this.showNoteNamesToggle = page.getByTestId("explorer-toggle-note-names");
+    this.clearOverlayButton = page.getByTestId("explorer-clear-overlay");
 
-    // AI hint
-    this.requestHintButton = page.getByRole("button", { name: /get ai hint|loading hint/i });
-    this.hintDisplay = page.locator("div.border-emerald-400\\/30").filter({ hasText: /tip/i });
-    this.hintError = page.locator("div.border-rose-500\\/40");
+    // AI hint using data-testid
+    this.requestHintButton = page.getByTestId("explorer-hint-button");
+    this.hintDisplay = page.getByTestId("explorer-hint-result");
+    this.hintError = page.getByTestId("explorer-hint-error");
 
     // Highlighted notes on fretboard (amber/pulse styling)
-    this.highlightedNotes = page.locator("button[class*='animate-pulse'], button[class*='amber']");
+    this.highlightedNotes = page.locator("[data-testid^='fretboard-position-'][class*='animate-pulse'], [data-testid^='fretboard-position-'][class*='amber']");
   }
 
   async goto(): Promise<void> {
@@ -77,7 +75,7 @@ export class ExplorerPage extends BasePage {
   }
 
   async selectRootNote(note: string): Promise<void> {
-    await this.page.locator("aside").getByRole("button", { name: new RegExp(`^${note}$`) }).click();
+    await this.page.getByTestId(`explorer-root-note-${note}`).click();
   }
 
   async selectScales(): Promise<void> {
@@ -90,12 +88,27 @@ export class ExplorerPage extends BasePage {
 
   async selectScale(scaleType: string): Promise<void> {
     await this.selectScales();
-    await this.page.getByRole("button", { name: new RegExp(scaleType, "i") }).click();
+    // Map short names to full option names and convert to testid format
+    // Options are: "Major Scale", "Natural Minor", "Pentatonic Major", "Pentatonic Minor"
+    const scaleMap: Record<string, string> = {
+      "major": "major-scale",
+      "major scale": "major-scale",
+      "minor": "natural-minor",
+      "natural minor": "natural-minor",
+      "pentatonic major": "pentatonic-major",
+      "pentatonic minor": "pentatonic-minor",
+    };
+    const normalized = scaleType.toLowerCase();
+    const testIdSuffix = scaleMap[normalized] || normalized.replace(/\s+/g, "-");
+    await this.page.getByTestId(`explorer-scale-${testIdSuffix}`).click();
   }
 
   async selectChord(chordType: string): Promise<void> {
     await this.selectChords();
-    await this.page.getByRole("button", { name: new RegExp(`^${chordType}$`, "i") }).click();
+    // Convert chord type to testid format (e.g., "Major" -> "major")
+    // Chord options use their value directly: major, minor, diminished, augmented
+    const testIdSuffix = chordType.toLowerCase();
+    await this.page.getByTestId(`explorer-chord-${testIdSuffix}`).click();
   }
 
   async toggleFretRange(): Promise<void> {
@@ -133,7 +146,7 @@ export class ExplorerPage extends BasePage {
   }
 
   async clickFretboardPosition(fret: number, stringNum: number): Promise<void> {
-    const note = this.page.locator(`button[aria-label*="String ${stringNum}"][aria-label*="fret ${fret}"]`);
+    const note = this.page.getByTestId(`fretboard-position-s${stringNum}-f${fret}`);
     await note.click();
   }
 

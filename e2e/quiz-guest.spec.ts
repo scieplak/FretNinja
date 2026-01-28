@@ -14,7 +14,7 @@ test.describe("Guest Quiz Flow", () => {
 
       await quizHubPage.selectQuizType("find_note");
 
-      await expect(quizHubPage.findNoteButton).toHaveAttribute("data-selected", "true");
+      await expect(quizHubPage.findNoteButton).toHaveAttribute("aria-checked", "true");
     });
 
     // QUIZ-002

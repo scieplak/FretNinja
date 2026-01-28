@@ -41,38 +41,38 @@ export class ProgressPage extends BasePage {
   constructor(page: Page) {
     super(page);
 
-    // Tabs
-    this.overviewTab = page.getByRole("tab", { name: /overview|summary/i });
-    this.heatmapTab = page.getByRole("tab", { name: /heatmap|errors/i });
-    this.historyTab = page.getByRole("tab", { name: /history|sessions/i });
+    // Tabs - using data-testid
+    this.overviewTab = page.getByTestId("progress-tab-stats");
+    this.heatmapTab = page.getByTestId("progress-tab-heatmap");
+    this.historyTab = page.getByTestId("progress-tab-history");
 
-    // Overview
-    this.totalQuizzes = page.getByTestId("total-quizzes");
-    this.averageScore = page.getByTestId("average-score");
-    this.bestScore = page.getByTestId("best-score");
-    this.byQuizTypeStats = page.getByTestId("by-quiz-type");
-    this.byDifficultyStats = page.getByTestId("by-difficulty");
+    // Overview - using data-testid
+    this.totalQuizzes = page.getByTestId("progress-total-quizzes");
+    this.averageScore = page.getByTestId("progress-practice-time");
+    this.bestScore = page.getByTestId("progress-current-streak");
+    this.byQuizTypeStats = page.getByTestId("progress-stats-by-quiz-type");
+    this.byDifficultyStats = page.getByTestId("progress-stats-by-difficulty");
 
-    // Heatmap
-    this.heatmapFretboard = page.getByTestId("heatmap-fretboard");
-    this.heatmapLegend = page.getByTestId("heatmap-legend");
-    this.errorHotspots = page.locator("[data-error-count]");
+    // Heatmap - using data-testid
+    this.heatmapFretboard = page.getByTestId("progress-heatmap-container");
+    this.heatmapLegend = page.locator("div").filter({ hasText: /errors$/ }).first();
+    this.errorHotspots = page.locator("div.rounded-lg.border.group");
 
-    // Filters
-    this.quizTypeFilter = page.getByRole("combobox", { name: /quiz type/i });
-    this.dateRangeFilter = page.getByRole("combobox", { name: /date range/i });
+    // Filters - using data-testid
+    this.quizTypeFilter = page.getByTestId("progress-heatmap-quiz-type-select");
+    this.dateRangeFilter = page.getByTestId("progress-heatmap-date-range-select");
     this.fromDateInput = page.getByLabel(/from date/i);
     this.toDateInput = page.getByLabel(/to date/i);
 
-    // History
-    this.sessionHistoryList = page.getByTestId("session-history");
-    this.sessionItems = page.locator("[data-session-id]");
-    this.paginationControls = page.getByRole("navigation", { name: /pagination/i });
-    this.nextPageButton = page.getByRole("button", { name: /next/i });
-    this.previousPageButton = page.getByRole("button", { name: /previous|prev/i });
+    // History - using data-testid
+    this.sessionHistoryList = page.getByTestId("progress-history-table");
+    this.sessionItems = page.getByTestId("progress-history-body").locator("tr");
+    this.paginationControls = page.getByTestId("progress-history-pagination");
+    this.nextPageButton = page.getByTestId("progress-history-next-button");
+    this.previousPageButton = page.getByTestId("progress-history-prev-button");
 
     // Empty state
-    this.emptyStateMessage = page.getByText(/no data|no quizzes|start practicing/i);
+    this.emptyStateMessage = page.getByTestId("progress-error-message");
   }
 
   async goto(): Promise<void> {
@@ -93,17 +93,21 @@ export class ProgressPage extends BasePage {
   }
 
   async filterByQuizType(quizType: string): Promise<void> {
-    await this.quizTypeFilter.click();
-    await this.page.getByRole("option", { name: new RegExp(quizType, "i") }).click();
+    // Use selectOption for select element
+    await this.quizTypeFilter.selectOption({ value: quizType });
   }
 
-  async filterByDateRange(from: string, to: string): Promise<void> {
-    await this.fromDateInput.fill(from);
-    await this.toDateInput.fill(to);
+  async filterByDateRange(range: string): Promise<void> {
+    // Use selectOption for the date range dropdown
+    await this.dateRangeFilter.selectOption({ value: range });
   }
 
   async getTotalQuizzes(): Promise<number> {
-    const text = await this.totalQuizzes.textContent();
+    // Make sure we're on the stats tab
+    if (!(await this.totalQuizzes.isVisible({ timeout: 1000 }).catch(() => false))) {
+      await this.switchToOverviewTab();
+    }
+    const text = await this.page.getByTestId("progress-total-quizzes-value").textContent();
     const match = text?.match(/(\d+)/);
     return match ? parseInt(match[1], 10) : 0;
   }

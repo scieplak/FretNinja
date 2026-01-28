@@ -135,25 +135,26 @@ const ProgressView = ({ user }: ProgressViewProps) => {
   }, [heatmap]);
 
   return (
-    <div className="space-y-8">
+    <div className="space-y-8" data-testid="progress-view">
       <header className="space-y-2">
         <p className="text-xs font-semibold uppercase tracking-[0.3em] text-emerald-300">Progress</p>
-        <h1 className="text-2xl font-semibold text-white">Track your learning progress</h1>
+        <h1 className="text-2xl font-semibold text-white" data-testid="progress-heading">Track your learning progress</h1>
         <p className="text-sm text-slate-300">Review heatmaps, stats, and session history in one place.</p>
       </header>
 
       {errorMessage ? (
-        <div className="rounded-2xl border border-rose-500/40 bg-rose-500/10 px-6 py-4 text-sm text-rose-200">
+        <div className="rounded-2xl border border-rose-500/40 bg-rose-500/10 px-6 py-4 text-sm text-rose-200" data-testid="progress-error-message">
           {errorMessage}
         </div>
       ) : null}
 
-      <div className="flex flex-wrap gap-2">
+      <div className="flex flex-wrap gap-2" data-testid="progress-tabs">
         {(["heatmap", "stats", "history"] as TabKey[]).map((key) => (
           <button
             key={key}
             type="button"
             onClick={() => setTab(key)}
+            data-testid={`progress-tab-${key}`}
             className={`rounded-full border px-4 py-2 text-xs font-semibold uppercase tracking-[0.2em] ${
               tab === key
                 ? "border-emerald-400/60 bg-emerald-400/10 text-emerald-100"
@@ -168,11 +169,12 @@ const ProgressView = ({ user }: ProgressViewProps) => {
       </div>
 
       {tab === "heatmap" ? (
-        <section className="space-y-6">
+        <section className="space-y-6" data-testid="progress-heatmap-section">
           <div className="flex flex-wrap items-center gap-3 text-sm text-slate-300">
             <select
               value={quizType}
               onChange={(event) => setQuizType(event.target.value as QuizTypeEnum | "all")}
+              data-testid="progress-heatmap-quiz-type-select"
               className="rounded-lg border border-white/10 bg-slate-950/60 px-3 py-2 text-xs text-slate-200"
             >
               <option value="all">All quiz types</option>
@@ -185,6 +187,7 @@ const ProgressView = ({ user }: ProgressViewProps) => {
             <select
               value={dateRange}
               onChange={(event) => setDateRange(event.target.value)}
+              data-testid="progress-heatmap-date-range-select"
               className="rounded-lg border border-white/10 bg-slate-950/60 px-3 py-2 text-xs text-slate-200"
             >
               {DATE_RANGES.map((range) => (
@@ -195,8 +198,8 @@ const ProgressView = ({ user }: ProgressViewProps) => {
             </select>
           </div>
 
-          <div className="rounded-2xl border border-white/10 bg-white/5 p-6">
-            <p className="text-sm text-slate-300">{isLoading ? "Loading heatmap..." : heatmapSummary}</p>
+          <div className="rounded-2xl border border-white/10 bg-white/5 p-6" data-testid="progress-heatmap-container">
+            <p className="text-sm text-slate-300" data-testid="progress-heatmap-summary">{isLoading ? "Loading heatmap..." : heatmapSummary}</p>
             <div className="mt-4 grid gap-2">
               <div className="grid grid-cols-[40px_repeat(13,minmax(0,1fr))] gap-2 text-[0.65rem] text-slate-400">
                 <div></div>
@@ -251,35 +254,35 @@ const ProgressView = ({ user }: ProgressViewProps) => {
       ) : null}
 
       {tab === "stats" ? (
-        <section className="space-y-6">
-          <div className="grid gap-4 sm:grid-cols-3">
-            <div className="rounded-2xl border border-white/10 bg-white/5 p-5">
+        <section className="space-y-6" data-testid="progress-stats-section">
+          <div className="grid gap-4 sm:grid-cols-3" data-testid="progress-stats-summary">
+            <div className="rounded-2xl border border-white/10 bg-white/5 p-5" data-testid="progress-total-quizzes">
               <p className="text-xs uppercase tracking-[0.2em] text-slate-400">Total quizzes</p>
-              <p className="mt-2 text-2xl font-semibold text-white">
+              <p className="mt-2 text-2xl font-semibold text-white" data-testid="progress-total-quizzes-value">
                 {isLoading ? "—" : stats?.total_quizzes ?? 0}
               </p>
             </div>
-            <div className="rounded-2xl border border-white/10 bg-white/5 p-5">
+            <div className="rounded-2xl border border-white/10 bg-white/5 p-5" data-testid="progress-practice-time">
               <p className="text-xs uppercase tracking-[0.2em] text-slate-400">Practice time</p>
-              <p className="mt-2 text-2xl font-semibold text-white">
+              <p className="mt-2 text-2xl font-semibold text-white" data-testid="progress-practice-time-value">
                 {isLoading ? "—" : `${formatHours(stats?.total_time_seconds)} hrs`}
               </p>
             </div>
-            <div className="rounded-2xl border border-white/10 bg-white/5 p-5">
+            <div className="rounded-2xl border border-white/10 bg-white/5 p-5" data-testid="progress-current-streak">
               <p className="text-xs uppercase tracking-[0.2em] text-slate-400">Current streak</p>
-              <p className="mt-2 text-2xl font-semibold text-white">
+              <p className="mt-2 text-2xl font-semibold text-white" data-testid="progress-current-streak-value">
                 {isLoading ? "—" : stats?.current_streak ?? 0}
               </p>
             </div>
           </div>
 
           <div className="grid gap-6 lg:grid-cols-2">
-            <div className="rounded-2xl border border-white/10 bg-white/5 p-6">
+            <div className="rounded-2xl border border-white/10 bg-white/5 p-6" data-testid="progress-stats-by-quiz-type">
               <h2 className="text-lg font-semibold text-white">By quiz type</h2>
-              <div className="mt-4 space-y-3 text-sm text-slate-300">
+              <div className="mt-4 space-y-3 text-sm text-slate-300" data-testid="progress-stats-quiz-type-list">
                 {stats
                   ? Object.entries(stats.by_quiz_type).map(([key, value]) => (
-                      <div key={key} className="flex items-center justify-between rounded-lg border border-white/10 bg-slate-950/60 px-4 py-3">
+                      <div key={key} data-testid={`progress-stats-quiz-type-${key}`} className="flex items-center justify-between rounded-lg border border-white/10 bg-slate-950/60 px-4 py-3">
                         <span>{QUIZ_TYPE_LABELS[key as QuizTypeEnum]}</span>
                         <span>{value.average_score}% avg · {value.count} quizzes</span>
                       </div>
@@ -287,12 +290,12 @@ const ProgressView = ({ user }: ProgressViewProps) => {
                   : "No stats yet."}
               </div>
             </div>
-            <div className="rounded-2xl border border-white/10 bg-white/5 p-6">
+            <div className="rounded-2xl border border-white/10 bg-white/5 p-6" data-testid="progress-stats-by-difficulty">
               <h2 className="text-lg font-semibold text-white">By difficulty</h2>
-              <div className="mt-4 space-y-3 text-sm text-slate-300">
+              <div className="mt-4 space-y-3 text-sm text-slate-300" data-testid="progress-stats-difficulty-list">
                 {stats
                   ? Object.entries(stats.by_difficulty).map(([key, value]) => (
-                      <div key={key} className="flex items-center justify-between rounded-lg border border-white/10 bg-slate-950/60 px-4 py-3">
+                      <div key={key} data-testid={`progress-stats-difficulty-${key}`} className="flex items-center justify-between rounded-lg border border-white/10 bg-slate-950/60 px-4 py-3">
                         <span className="capitalize">{key}</span>
                         <span>{value.average_score}% avg · {value.count} quizzes</span>
                       </div>
@@ -305,11 +308,11 @@ const ProgressView = ({ user }: ProgressViewProps) => {
       ) : null}
 
       {tab === "history" ? (
-        <section className="space-y-4">
+        <section className="space-y-4" data-testid="progress-history-section">
           <div className="rounded-2xl border border-white/10 bg-white/5 p-6">
             <h2 className="text-lg font-semibold text-white">Quiz history</h2>
             <div className="mt-4 overflow-x-auto">
-              <table className="w-full text-sm text-slate-300">
+              <table className="w-full text-sm text-slate-300" data-testid="progress-history-table">
                 <thead className="text-xs uppercase text-slate-400">
                   <tr>
                     <th className="px-3 py-2 text-left">Date</th>
@@ -319,10 +322,10 @@ const ProgressView = ({ user }: ProgressViewProps) => {
                     <th className="px-3 py-2 text-left">Time</th>
                   </tr>
                 </thead>
-                <tbody>
+                <tbody data-testid="progress-history-body">
                   {sessions?.data?.length ? (
                     sessions.data.map((session) => (
-                      <tr key={session.id} className="border-t border-white/5">
+                      <tr key={session.id} className="border-t border-white/5" data-testid={`progress-history-row-${session.id}`}>
                         <td className="px-3 py-3">{formatDate(session.completed_at || session.started_at)}</td>
                         <td className="px-3 py-3">{QUIZ_TYPE_LABELS[session.quiz_type]}</td>
                         <td className="px-3 py-3 capitalize">{session.difficulty}</td>
@@ -332,7 +335,7 @@ const ProgressView = ({ user }: ProgressViewProps) => {
                     ))
                   ) : (
                     <tr>
-                      <td colSpan={5} className="px-3 py-6 text-center text-slate-400">
+                      <td colSpan={5} className="px-3 py-6 text-center text-slate-400" data-testid="progress-history-empty">
                         {isLoading ? "Loading sessions..." : "No sessions yet."}
                       </td>
                     </tr>
@@ -342,22 +345,24 @@ const ProgressView = ({ user }: ProgressViewProps) => {
             </div>
           </div>
 
-          <div className="flex items-center justify-between text-sm text-slate-300">
+          <div className="flex items-center justify-between text-sm text-slate-300" data-testid="progress-history-pagination">
             <button
               type="button"
               onClick={() => setPage((prev) => Math.max(prev - 1, 1))}
               disabled={page <= 1}
+              data-testid="progress-history-prev-button"
               className="rounded-lg border border-white/10 bg-slate-950/60 px-3 py-2 disabled:opacity-50"
             >
               Previous
             </button>
-            <span>
+            <span data-testid="progress-history-page-info">
               Page {page} of {totalPages}
             </span>
             <button
               type="button"
               onClick={() => setPage((prev) => Math.min(prev + 1, totalPages))}
               disabled={page >= totalPages}
+              data-testid="progress-history-next-button"
               className="rounded-lg border border-white/10 bg-slate-950/60 px-3 py-2 disabled:opacity-50"
             >
               Next

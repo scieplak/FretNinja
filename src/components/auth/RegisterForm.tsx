@@ -132,6 +132,7 @@ const RegisterForm = () => {
           value={email}
           onChange={handleEmailChange}
           onBlur={() => setTouched((prev) => ({ ...prev, email: true }))}
+          data-testid="register-email-input"
           className="w-full rounded-lg border border-white/10 bg-slate-950/60 px-4 py-3 text-sm text-white shadow-sm outline-none transition focus:border-emerald-400/60 focus:ring-2 focus:ring-emerald-400/30"
           aria-invalid={touched.email && !isEmailValid}
           aria-describedby={!isEmailValid && touched.email ? errorId : undefined}
@@ -157,6 +158,7 @@ const RegisterForm = () => {
             value={password}
             onChange={handlePasswordChange}
             onBlur={() => setTouched((prev) => ({ ...prev, password: true }))}
+            data-testid="register-password-input"
             className="w-full rounded-lg border border-white/10 bg-slate-950/60 px-4 py-3 pr-20 text-sm text-white shadow-sm outline-none transition focus:border-emerald-400/60 focus:ring-2 focus:ring-emerald-400/30"
             aria-invalid={touched.password && !isPasswordValid}
             aria-describedby={strengthId}
@@ -186,13 +188,13 @@ const RegisterForm = () => {
       </div>
 
       {apiError ? (
-        <div role="alert" aria-live="polite" className="rounded-lg border border-rose-500/40 bg-rose-500/10 px-4 py-3 text-sm text-rose-200">
+        <div role="alert" aria-live="polite" data-testid="register-error" className="rounded-lg border border-rose-500/40 bg-rose-500/10 px-4 py-3 text-sm text-rose-200">
           {apiError}
         </div>
       ) : null}
 
       {successMessage ? (
-        <div role="status" aria-live="polite" className="rounded-lg border border-emerald-400/40 bg-emerald-400/10 px-4 py-3 text-sm text-emerald-100">
+        <div role="status" aria-live="polite" data-testid="register-success" className="rounded-lg border border-emerald-400/40 bg-emerald-400/10 px-4 py-3 text-sm text-emerald-100">
           {successMessage}
         </div>
       ) : null}
@@ -200,6 +202,7 @@ const RegisterForm = () => {
       <button
         type="submit"
         disabled={!canSubmit}
+        data-testid="register-submit"
         className="flex w-full items-center justify-center rounded-lg bg-emerald-400 px-4 py-3 text-sm font-semibold text-slate-900 shadow-lg shadow-emerald-500/20 transition hover:bg-emerald-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-400/60 disabled:cursor-not-allowed disabled:bg-slate-700 disabled:text-slate-400"
       >
         {isSubmitting ? "Creating account..." : "Create account"}

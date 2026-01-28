@@ -7,7 +7,9 @@ import { BasePage } from "./BasePage";
 export class DashboardPage extends BasePage {
   // Stats overview
   readonly totalQuizzesSection: Locator;
+  readonly totalQuizzes: Locator;
   readonly currentStreakBadge: Locator;
+  readonly currentStreak: Locator;
   readonly practiceTimeSection: Locator;
 
   // Recent sessions
@@ -29,25 +31,27 @@ export class DashboardPage extends BasePage {
   constructor(page: Page) {
     super(page);
 
-    // Stats are in the Quick stats section
-    this.totalQuizzesSection = page.locator("div").filter({ hasText: /^quizzes completed$/i }).first();
-    this.currentStreakBadge = page.getByText(/\d+ day streak/);
-    this.practiceTimeSection = page.locator("div").filter({ hasText: /^practice time$/i }).first();
+    // Stats section using data-testid
+    this.totalQuizzesSection = page.getByTestId("dashboard-stat-0");
+    this.totalQuizzes = this.totalQuizzesSection;
+    this.currentStreakBadge = page.getByTestId("dashboard-streak");
+    this.currentStreak = this.currentStreakBadge;
+    this.practiceTimeSection = page.getByTestId("dashboard-stat-2");
 
-    // Recent sessions section
-    this.recentSessionsList = page.locator("section").filter({ hasText: /recent activity/i });
-    this.recentSessionItems = this.recentSessionsList.locator("div").filter({ has: page.locator("span") });
+    // Recent sessions section using data-testid
+    this.recentSessionsList = page.getByTestId("dashboard-recent-activity");
+    this.recentSessionItems = page.getByTestId("dashboard-session-item");
 
-    // Quick actions
-    this.startQuizButton = page.getByRole("link", { name: /start quiz/i });
-    this.viewProgressButton = page.getByRole("link", { name: /view all activity/i });
-    this.viewAchievementsButton = page.getByRole("link", { name: /view all achievements/i });
+    // Quick actions using data-testid
+    this.startQuizButton = page.getByTestId("dashboard-start-quiz-button");
+    this.viewProgressButton = page.getByTestId("dashboard-view-activity");
+    this.viewAchievementsButton = page.getByTestId("dashboard-view-achievements");
 
     // Empty state
-    this.emptyStateMessage = page.getByText(/no sessions yet|take your first quiz/i);
+    this.emptyStateMessage = page.getByTestId("dashboard-empty-sessions");
 
-    // User greeting in h1
-    this.userGreeting = page.locator("h1").filter({ hasText: /welcome back/i });
+    // User greeting using data-testid
+    this.userGreeting = page.getByTestId("dashboard-welcome");
     // Logout button is in the header, "Sign out"
     this.logoutButton = page.getByRole("button", { name: /sign out/i });
   }
@@ -55,13 +59,21 @@ export class DashboardPage extends BasePage {
   async goto(): Promise<void> {
     await this.page.goto("/dashboard");
     await this.waitForPageLoad();
+    // Wait for stats to load (value changes from "…" to actual number)
+    await this.page.waitForFunction(
+      () => {
+        const statsEl = document.querySelector('[data-testid="dashboard-stat-0"] p.text-xl');
+        return statsEl && !statsEl.textContent?.includes("…");
+      },
+      { timeout: 10000 }
+    ).catch(() => {
+      // Stats may already be loaded or user is guest
+    });
   }
 
   async getTotalQuizzes(): Promise<number> {
-    // Look for the value in the Quick stats section next to "Quizzes completed"
-    const statsSection = this.page.locator("section").filter({ hasText: /quick stats/i });
-    const quizzesBlock = statsSection.locator("div").filter({ hasText: /quizzes completed/i }).first();
-    const valueText = await quizzesBlock.locator("p.text-xl").textContent();
+    // Get the value from the first stat block (Quizzes completed)
+    const valueText = await this.totalQuizzesSection.locator("p.text-xl").textContent();
     const match = valueText?.match(/(\d+)/);
     return match ? parseInt(match[1], 10) : 0;
   }
@@ -78,9 +90,8 @@ export class DashboardPage extends BasePage {
   }
 
   async getRecentSessionsCount(): Promise<number> {
-    // Count session items in recent activity section
-    const sessionItems = this.recentSessionsList.locator("div.flex.items-center.justify-between");
-    return sessionItems.count();
+    // Count session items using data-testid
+    return this.recentSessionItems.count();
   }
 
   async isEmptyState(): Promise<boolean> {

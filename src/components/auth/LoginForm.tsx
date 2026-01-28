@@ -128,6 +128,7 @@ const LoginForm = ({ redirectTo }: LoginFormProps) => {
           required
           value={email}
           onChange={handleEmailChange}
+          data-testid="login-email-input"
           className="w-full rounded-lg border border-white/10 bg-slate-950/60 px-4 py-3 text-sm text-white shadow-sm outline-none transition focus:border-emerald-400/60 focus:ring-2 focus:ring-emerald-400/30"
           aria-invalid={!isEmailValid && email.length > 0}
         />
@@ -146,6 +147,7 @@ const LoginForm = ({ redirectTo }: LoginFormProps) => {
             required
             value={password}
             onChange={handlePasswordChange}
+            data-testid="login-password-input"
             className="w-full rounded-lg border border-white/10 bg-slate-950/60 px-4 py-3 pr-20 text-sm text-white shadow-sm outline-none transition focus:border-emerald-400/60 focus:ring-2 focus:ring-emerald-400/30"
           />
           <button
@@ -169,6 +171,7 @@ const LoginForm = ({ redirectTo }: LoginFormProps) => {
           id={errorId}
           role="alert"
           aria-live="polite"
+          data-testid="login-error"
           className="rounded-lg border border-rose-500/40 bg-rose-500/10 px-4 py-3 text-sm text-rose-200"
         >
           {apiError}
@@ -178,6 +181,7 @@ const LoginForm = ({ redirectTo }: LoginFormProps) => {
       <button
         type="submit"
         disabled={!canSubmit}
+        data-testid="login-submit"
         className="flex w-full items-center justify-center rounded-lg bg-emerald-400 px-4 py-3 text-sm font-semibold text-slate-900 shadow-lg shadow-emerald-500/20 transition hover:bg-emerald-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-400/60 disabled:cursor-not-allowed disabled:bg-slate-700 disabled:text-slate-400"
       >
         {isSubmitting ? "Signing in..." : "Sign in"}

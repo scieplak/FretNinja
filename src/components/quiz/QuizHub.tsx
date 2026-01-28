@@ -72,6 +72,7 @@ const QuizHub = () => {
                 type="button"
                 role="radio"
                 aria-checked={isSelected}
+                data-testid={`quiz-mode-${mode.id}`}
                 onClick={() => setSelectedMode(mode.id)}
                 className={`rounded-2xl border px-5 py-4 text-left transition ${
                   isSelected
@@ -100,6 +101,7 @@ const QuizHub = () => {
                 type="button"
                 role="radio"
                 aria-checked={isSelected}
+                data-testid={`quiz-difficulty-${difficulty.id}`}
                 onClick={() => setSelectedDifficulty(difficulty.id)}
                 className={`rounded-2xl border px-5 py-4 text-left transition ${
                   isSelected
@@ -120,6 +122,7 @@ const QuizHub = () => {
           type="button"
           onClick={handleStart}
           disabled={!selectedMode || !selectedDifficulty}
+          data-testid="quiz-start-button"
           className="rounded-lg bg-emerald-400 px-6 py-3 text-sm font-semibold text-slate-900 shadow-lg shadow-emerald-500/20 transition hover:bg-emerald-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-400/60 disabled:cursor-not-allowed disabled:bg-slate-700 disabled:text-slate-400"
         >
           Start quiz

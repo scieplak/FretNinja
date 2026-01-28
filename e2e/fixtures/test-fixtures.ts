@@ -10,6 +10,11 @@ import { DashboardPage } from "../pages/DashboardPage";
 import { ExplorerPage } from "../pages/ExplorerPage";
 import { ProgressPage } from "../pages/ProgressPage";
 import { AchievementsPage } from "../pages/AchievementsPage";
+import {
+  cleanupUserQuizSessions,
+  cleanupAllUserTestData,
+  getTestUserId,
+} from "../helpers/supabase-cleanup";
 
 /**
  * Test credentials from environment variables
@@ -85,6 +90,9 @@ export const test = base.extend<Fixtures>({
 });
 
 export { expect } from "@playwright/test";
+
+// Re-export cleanup helpers for use in test files
+export { cleanupUserQuizSessions, cleanupAllUserTestData, getTestUserId };
 
 // Re-export page types for convenience
 export type {

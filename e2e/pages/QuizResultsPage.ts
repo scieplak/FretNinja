@@ -7,6 +7,7 @@ import { BasePage } from "./BasePage";
 export class QuizResultsPage extends BasePage {
   // Score display
   readonly scoreHeading: Locator;
+  readonly scoreValue: Locator;
   readonly motivationalMessage: Locator;
 
   // Achievement notification
@@ -28,22 +29,23 @@ export class QuizResultsPage extends BasePage {
   constructor(page: Page) {
     super(page);
 
-    // Score is displayed in h1 with format "X/Y · Z%"
-    this.scoreHeading = page.locator("h1").filter({ hasText: /\d+\/\d+.*%/ });
-    this.motivationalMessage = page.locator("header p.text-sm");
+    // Score is displayed with data-testid
+    this.scoreHeading = page.getByTestId("quiz-results-score");
+    this.scoreValue = this.scoreHeading;
+    this.motivationalMessage = page.getByTestId("quiz-results-message");
 
     // Achievement section
-    this.achievementSection = page.locator("section").filter({ hasText: /achievements earned/i });
-    this.achievementBadges = this.achievementSection.locator("span.rounded-full");
+    this.achievementSection = page.getByTestId("quiz-results-achievements");
+    this.achievementBadges = page.getByTestId("quiz-results-achievement-list").locator("span");
 
     // Question breakdown
-    this.breakdownSection = page.locator("section").filter({ hasText: /breakdown/i });
-    this.missedQuestions = this.breakdownSection.locator("div.rounded-lg.border");
+    this.breakdownSection = page.getByTestId("quiz-results-breakdown");
+    this.missedQuestions = page.getByTestId("quiz-results-missed-questions").locator("div[data-testid^='quiz-results-missed-']");
 
     // Action links
-    this.retryButton = page.getByRole("link", { name: /retry same quiz/i });
-    this.differentModeLink = page.getByRole("link", { name: /try different mode/i });
-    this.dashboardLink = page.getByRole("link", { name: /back to dashboard/i });
+    this.retryButton = page.getByTestId("quiz-results-retry-button");
+    this.differentModeLink = page.getByTestId("quiz-results-different-mode-link");
+    this.dashboardLink = page.getByTestId("quiz-results-dashboard-link");
 
     this.loadingMessage = page.getByText(/loading your results/i);
   }
@@ -104,7 +106,7 @@ export class QuizResultsPage extends BasePage {
 
   async getMissedQuestionsCount(): Promise<number> {
     // Check for "You nailed every question" message
-    const perfectMessage = this.breakdownSection.getByText(/nailed every question/i);
+    const perfectMessage = this.page.getByTestId("quiz-results-perfect");
     if (await perfectMessage.isVisible()) {
       return 0;
     }
@@ -121,5 +123,9 @@ export class QuizResultsPage extends BasePage {
 
   async clickDashboard(): Promise<void> {
     await this.dashboardLink.click();
+  }
+
+  async clickPlayAgain(): Promise<void> {
+    await this.differentModeLink.click();
   }
 }

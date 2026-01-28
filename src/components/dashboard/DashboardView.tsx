@@ -117,8 +117,18 @@ const DashboardView = ({ user }: DashboardViewProps) => {
 
     load();
 
+    // Refetch when page becomes visible (user returns from quiz)
+    const handleVisibilityChange = () => {
+      if (document.visibilityState === "visible" && !isGuest) {
+        load();
+      }
+    };
+
+    document.addEventListener("visibilitychange", handleVisibilityChange);
+
     return () => {
       active = false;
+      document.removeEventListener("visibilitychange", handleVisibilityChange);
     };
   }, [isGuest]);
 
@@ -169,34 +179,34 @@ const DashboardView = ({ user }: DashboardViewProps) => {
   const isNewUser = (data.stats?.total_quizzes ?? 0) === 0 && !data.isGuest;
 
   return (
-    <div className="space-y-8">
+    <div className="space-y-8" data-testid="dashboard-view">
       <header className="flex flex-wrap items-center justify-between gap-4">
         <div>
           <p className="text-xs font-semibold uppercase tracking-[0.3em] text-emerald-300">Dashboard</p>
-          <h1 className="text-2xl font-semibold text-white">Welcome back, {displayName}</h1>
+          <h1 className="text-2xl font-semibold text-white" data-testid="dashboard-welcome">Welcome back, {displayName}</h1>
           <p className="text-sm text-slate-300">Track your progress and jump into your next session.</p>
         </div>
-        <div className="rounded-full border border-emerald-400/40 bg-emerald-400/10 px-4 py-2 text-sm text-emerald-100">
+        <div data-testid="dashboard-streak" className="rounded-full border border-emerald-400/40 bg-emerald-400/10 px-4 py-2 text-sm text-emerald-100">
           🔥 {data.stats?.current_streak ?? 0} day streak
         </div>
       </header>
 
       {data.isGuest ? (
-        <div className="rounded-2xl border border-emerald-400/30 bg-emerald-400/10 px-6 py-4 text-sm text-emerald-100">
+        <div className="rounded-2xl border border-emerald-400/30 bg-emerald-400/10 px-6 py-4 text-sm text-emerald-100" data-testid="dashboard-guest-prompt">
           You're exploring as a guest. Create an account to save progress and unlock achievements.
-          <a href="/register" className="ml-2 font-semibold text-white hover:text-emerald-200">
+          <a href="/register" data-testid="dashboard-register-link" className="ml-2 font-semibold text-white hover:text-emerald-200">
             Register now
           </a>
         </div>
       ) : null}
 
       {errorMessage ? (
-        <div className="rounded-2xl border border-rose-500/40 bg-rose-500/10 px-6 py-4 text-sm text-rose-200">
+        <div className="rounded-2xl border border-rose-500/40 bg-rose-500/10 px-6 py-4 text-sm text-rose-200" data-testid="dashboard-error">
           {errorMessage}
         </div>
       ) : null}
 
-      <section className="rounded-2xl border border-white/10 bg-white/5 p-6 shadow-2xl shadow-slate-900/50">
+      <section className="rounded-2xl border border-white/10 bg-white/5 p-6 shadow-2xl shadow-slate-900/50" data-testid="dashboard-start-quiz-section">
         <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
           <div>
             <h2 className="text-xl font-semibold text-white">
@@ -208,6 +218,7 @@ const DashboardView = ({ user }: DashboardViewProps) => {
           </div>
           <a
             href="/quiz"
+            data-testid="dashboard-start-quiz-button"
             className="inline-flex items-center justify-center rounded-lg bg-emerald-400 px-5 py-3 text-sm font-semibold text-slate-900 shadow-lg shadow-emerald-500/20 transition hover:bg-emerald-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-400/60"
           >
             Start quiz
@@ -216,11 +227,11 @@ const DashboardView = ({ user }: DashboardViewProps) => {
       </section>
 
       <div className="grid gap-6 lg:grid-cols-2">
-        <section className="rounded-2xl border border-white/10 bg-white/5 p-6">
+        <section data-testid="dashboard-quick-stats" className="rounded-2xl border border-white/10 bg-white/5 p-6">
           <h3 className="text-lg font-semibold text-white">Quick stats</h3>
           <div className="mt-4 grid gap-4 sm:grid-cols-3">
-            {quickStats.map((stat) => (
-              <div key={stat.label} className="rounded-xl border border-white/10 bg-slate-950/40 p-4">
+            {quickStats.map((stat, index) => (
+              <div key={stat.label} data-testid={`dashboard-stat-${index}`} className="rounded-xl border border-white/10 bg-slate-950/40 p-4">
                 <p className="text-xs uppercase tracking-[0.2em] text-slate-400">{stat.label}</p>
                 <p className="mt-2 text-xl font-semibold text-white">{isLoading ? "…" : stat.value}</p>
               </div>
@@ -228,16 +239,16 @@ const DashboardView = ({ user }: DashboardViewProps) => {
           </div>
         </section>
 
-        <section className="rounded-2xl border border-white/10 bg-white/5 p-6">
+        <section data-testid="dashboard-recent-activity" className="rounded-2xl border border-white/10 bg-white/5 p-6">
           <h3 className="text-lg font-semibold text-white">Recent activity</h3>
           <div className="mt-4 space-y-3 text-sm text-slate-300">
             {isLoading ? (
               <p>Loading your latest sessions...</p>
             ) : recentSessions.length === 0 ? (
-              <p>No sessions yet. Start a quiz to see results here.</p>
+              <p data-testid="dashboard-empty-sessions">No sessions yet. Start a quiz to see results here.</p>
             ) : (
               recentSessions.map((session) => (
-                <div key={session.id} className="flex items-center justify-between rounded-lg border border-white/10 bg-slate-950/40 px-4 py-3">
+                <div key={session.id} data-testid="dashboard-session-item" className="flex items-center justify-between rounded-lg border border-white/10 bg-slate-950/40 px-4 py-3">
                   <div>
                     <p className="text-white">
                       {session.quiz_type.replace("_", " ")} · {session.difficulty}
@@ -250,42 +261,42 @@ const DashboardView = ({ user }: DashboardViewProps) => {
                 </div>
               ))
             )}
-            <a href="/progress" className="inline-flex text-emerald-200 hover:text-emerald-100">
+            <a href="/progress" data-testid="dashboard-view-activity" className="inline-flex text-emerald-200 hover:text-emerald-100">
               View all activity →
             </a>
           </div>
         </section>
 
-        <section className="rounded-2xl border border-white/10 bg-white/5 p-6">
+        <section className="rounded-2xl border border-white/10 bg-white/5 p-6" data-testid="dashboard-achievement-progress">
           <h3 className="text-lg font-semibold text-white">Achievement progress</h3>
-          <div className="mt-4 rounded-lg border border-white/10 bg-slate-950/40 px-4 py-4 text-sm text-slate-300">
+          <div className="mt-4 rounded-lg border border-white/10 bg-slate-950/40 px-4 py-4 text-sm text-slate-300" data-testid="dashboard-next-achievement">
             {nextAchievement ? (
               <>
-                <p className="text-white">{nextAchievement.display_name}</p>
-                <div className="mt-3 h-2 w-full overflow-hidden rounded-full bg-slate-800">
+                <p className="text-white" data-testid="dashboard-next-achievement-name">{nextAchievement.display_name}</p>
+                <div className="mt-3 h-2 w-full overflow-hidden rounded-full bg-slate-800" role="progressbar" aria-valuenow={nextAchievement.percentage} aria-valuemin={0} aria-valuemax={100} data-testid="dashboard-next-achievement-progress">
                   <div
                     className="h-full rounded-full bg-emerald-400"
                     style={{ width: `${Math.min(nextAchievement.percentage, 100)}%` }}
                   />
                 </div>
-                <p className="mt-2 text-xs text-slate-400">
+                <p className="mt-2 text-xs text-slate-400" data-testid="dashboard-next-achievement-text">
                   {nextAchievement.current}/{nextAchievement.target} completed
                 </p>
               </>
             ) : (
-              <p>{data.isGuest ? "Sign in to track achievements." : "Keep practicing to unlock achievements."}</p>
+              <p data-testid="dashboard-no-achievement">{data.isGuest ? "Sign in to track achievements." : "Keep practicing to unlock achievements."}</p>
             )}
-            <a href="/achievements" className="mt-3 inline-flex text-emerald-200 hover:text-emerald-100">
+            <a href="/achievements" data-testid="dashboard-view-achievements" className="mt-3 inline-flex text-emerald-200 hover:text-emerald-100">
               View all achievements →
             </a>
           </div>
         </section>
 
-        <section className="rounded-2xl border border-white/10 bg-white/5 p-6">
+        <section className="rounded-2xl border border-white/10 bg-white/5 p-6" data-testid="dashboard-problem-areas">
           <h3 className="text-lg font-semibold text-white">Problem areas</h3>
           <div className="mt-4 rounded-lg border border-white/10 bg-slate-950/40 px-4 py-6 text-sm text-slate-300">
             <p>Heatmap preview will highlight your toughest fret positions.</p>
-            <a href="/progress" className="mt-3 inline-flex text-emerald-200 hover:text-emerald-100">
+            <a href="/progress" data-testid="dashboard-open-heatmap" className="mt-3 inline-flex text-emerald-200 hover:text-emerald-100">
               Open full heatmap →
             </a>
           </div>

@@ -99,8 +99,12 @@ test.describe("Dashboard", () => {
 
       await dashboardPage.logout();
 
-      // Should be redirected to home or login
-      await expect(page).toHaveURL(/^\/$|login/);
+      // Wait for navigation to complete
+      await page.waitForLoadState("networkidle");
+
+      // Should be redirected to home (/) or login page
+      const url = page.url();
+      expect(url.endsWith("/") || url.includes("login")).toBe(true);
     });
   });
 
