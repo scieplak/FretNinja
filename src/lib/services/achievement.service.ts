@@ -213,14 +213,19 @@ export class AchievementService {
       }
 
       if (shouldGrant) {
-        // Grant achievement
-        await this.supabase.from('user_achievements').insert({ user_id: userId, achievement_id: achievement.id });
+        // Grant achievement - only add to earned if insert succeeds
+        const { error } = await this.supabase
+          .from('user_achievements')
+          .insert({ user_id: userId, achievement_id: achievement.id });
 
-        earned.push({
-          id: achievement.id,
-          name: achievement.name,
-          display_name: achievement.display_name,
-        });
+        // Skip if already earned (unique constraint violation) or other error
+        if (!error) {
+          earned.push({
+            id: achievement.id,
+            name: achievement.name,
+            display_name: achievement.display_name,
+          });
+        }
       }
     }
 
