@@ -1,5 +1,5 @@
-import type { SupabaseClient } from '@supabase/supabase-js';
-import type { Database } from '../../db/database.types';
+import type { SupabaseClient } from "@supabase/supabase-js";
+import type { Database } from "../../db/database.types";
 import type {
   HeatmapResponseDTO,
   HeatmapDataItemDTO,
@@ -11,7 +11,7 @@ import type {
   NoteMasteryResponseDTO,
   NoteMasteryItemDTO,
   NoteEnum,
-} from '../../types';
+} from "../../types";
 
 type SupabaseClientType = SupabaseClient<Database>;
 
@@ -34,14 +34,14 @@ export class StatsService {
     // If no filters, use the view directly
     if (!filters.quiz_type && !filters.from_date && !filters.to_date) {
       const { data, error } = await this.supabase
-        .from('user_error_heatmap')
-        .select('fret_position, string_number, error_count')
-        .eq('user_id', userId);
+        .from("user_error_heatmap")
+        .select("fret_position, string_number, error_count")
+        .eq("user_id", userId);
 
       if (error) {
-        console.error('Failed to fetch heatmap:', error.message);
+        console.error("Failed to fetch heatmap:", error.message);
         return {
-          error: { status: 500, body: { code: 'SERVER_ERROR', message: 'Failed to fetch heatmap data' } },
+          error: { status: 500, body: { code: "SERVER_ERROR", message: "Failed to fetch heatmap data" } },
         };
       }
 
@@ -57,8 +57,8 @@ export class StatsService {
     }
 
     // With filters, need to query directly with JOINs
-    let query = this.supabase
-      .from('quiz_answers')
+    const query = this.supabase
+      .from("quiz_answers")
       .select(
         `
         fret_position,
@@ -70,9 +70,9 @@ export class StatsService {
         )
       `
       )
-      .eq('is_correct', false)
-      .not('fret_position', 'is', null)
-      .not('string_number', 'is', null);
+      .eq("is_correct", false)
+      .not("fret_position", "is", null)
+      .not("string_number", "is", null);
 
     // Note: We need to filter by user_id through the join
     // This is a limitation - we'll filter in JS if needed
@@ -80,9 +80,9 @@ export class StatsService {
     const { data: rawData, error } = await query;
 
     if (error) {
-      console.error('Failed to fetch heatmap:', error.message);
+      console.error("Failed to fetch heatmap:", error.message);
       return {
-        error: { status: 500, body: { code: 'SERVER_ERROR', message: 'Failed to fetch heatmap data' } },
+        error: { status: 500, body: { code: "SERVER_ERROR", message: "Failed to fetch heatmap data" } },
       };
     }
 
@@ -115,7 +115,7 @@ export class StatsService {
   }
 
   private aggregateHeatmapData(
-    rawData: Array<{ fret_position: number | null; string_number: number | null }>
+    rawData: { fret_position: number | null; string_number: number | null }[]
   ): HeatmapDataItemDTO[] {
     const map = new Map<string, number>();
 
@@ -127,7 +127,7 @@ export class StatsService {
 
     const result: HeatmapDataItemDTO[] = [];
     for (const [key, count] of map) {
-      const [fret, string] = key.split('-').map(Number);
+      const [fret, string] = key.split("-").map(Number);
       result.push({
         fret_position: fret,
         string_number: string,
@@ -160,11 +160,11 @@ export class StatsService {
   }
 
   async getNoteMastery(userId: string): Promise<ServiceResult<NoteMasteryResponseDTO>> {
-    const ALL_NOTES: NoteEnum[] = ['C', 'C#', 'D', 'D#', 'E', 'F', 'F#', 'G', 'G#', 'A', 'A#', 'B'];
+    const ALL_NOTES: NoteEnum[] = ["C", "C#", "D", "D#", "E", "F", "F#", "G", "G#", "A", "A#", "B"];
 
     // Query all answers with target_note for this user
     const { data: rawData, error } = await this.supabase
-      .from('quiz_answers')
+      .from("quiz_answers")
       .select(
         `
         target_note,
@@ -174,12 +174,12 @@ export class StatsService {
         )
       `
       )
-      .not('target_note', 'is', null);
+      .not("target_note", "is", null);
 
     if (error) {
-      console.error('Failed to fetch note mastery:', error.message);
+      console.error("Failed to fetch note mastery:", error.message);
       return {
-        error: { status: 500, body: { code: 'SERVER_ERROR', message: 'Failed to fetch note mastery data' } },
+        error: { status: 500, body: { code: "SERVER_ERROR", message: "Failed to fetch note mastery data" } },
       };
     }
 
@@ -237,29 +237,29 @@ export class StatsService {
   async getOverview(userId: string): Promise<ServiceResult<StatsOverviewDTO>> {
     // 1. Fetch profile for streaks
     const { data: profile, error: profileError } = await this.supabase
-      .from('profiles')
-      .select('current_streak, longest_streak')
-      .eq('id', userId)
+      .from("profiles")
+      .select("current_streak, longest_streak")
+      .eq("id", userId)
       .single();
 
     if (profileError || !profile) {
-      console.error('Failed to fetch profile:', profileError?.message);
+      console.error("Failed to fetch profile:", profileError?.message);
       return {
-        error: { status: 500, body: { code: 'SERVER_ERROR', message: 'Failed to fetch statistics' } },
+        error: { status: 500, body: { code: "SERVER_ERROR", message: "Failed to fetch statistics" } },
       };
     }
 
     // 2. Fetch all completed sessions for aggregation
     const { data: sessions, error: sessionsError } = await this.supabase
-      .from('quiz_sessions')
-      .select('quiz_type, difficulty, score, time_taken_seconds, completed_at')
-      .eq('user_id', userId)
-      .eq('status', 'completed');
+      .from("quiz_sessions")
+      .select("quiz_type, difficulty, score, time_taken_seconds, completed_at")
+      .eq("user_id", userId)
+      .eq("status", "completed");
 
     if (sessionsError) {
-      console.error('Failed to fetch sessions:', sessionsError.message);
+      console.error("Failed to fetch sessions:", sessionsError.message);
       return {
-        error: { status: 500, body: { code: 'SERVER_ERROR', message: 'Failed to fetch statistics' } },
+        error: { status: 500, body: { code: "SERVER_ERROR", message: "Failed to fetch statistics" } },
       };
     }
 
@@ -292,9 +292,9 @@ export class StatsService {
   }
 
   private aggregateByQuizType(
-    sessions: Array<{ quiz_type: string; score: number | null; time_taken_seconds: number | null }>
-  ): StatsOverviewDTO['by_quiz_type'] {
-    const types = ['find_note', 'name_note', 'mark_chord', 'recognize_interval'] as const;
+    sessions: { quiz_type: string; score: number | null; time_taken_seconds: number | null }[]
+  ): StatsOverviewDTO["by_quiz_type"] {
+    const types = ["find_note", "name_note", "mark_chord", "recognize_interval"] as const;
     const result: Record<string, QuizTypeStatsDTO> = {};
 
     for (const type of types) {
@@ -310,13 +310,13 @@ export class StatsService {
       };
     }
 
-    return result as StatsOverviewDTO['by_quiz_type'];
+    return result as StatsOverviewDTO["by_quiz_type"];
   }
 
   private aggregateByDifficulty(
-    sessions: Array<{ difficulty: string; score: number | null }>
-  ): StatsOverviewDTO['by_difficulty'] {
-    const difficulties = ['easy', 'medium', 'hard'] as const;
+    sessions: { difficulty: string; score: number | null }[]
+  ): StatsOverviewDTO["by_difficulty"] {
+    const difficulties = ["easy", "medium", "hard"] as const;
     const result: Record<string, DifficultyStatsDTO> = {};
 
     for (const diff of difficulties) {
@@ -330,12 +330,12 @@ export class StatsService {
       };
     }
 
-    return result as StatsOverviewDTO['by_difficulty'];
+    return result as StatsOverviewDTO["by_difficulty"];
   }
 
   private calculateRecentTrend(
-    sessions: Array<{ score: number | null; completed_at: string | null }>
-  ): StatsOverviewDTO['recent_trend'] {
+    sessions: { score: number | null; completed_at: string | null }[]
+  ): StatsOverviewDTO["recent_trend"] {
     const now = new Date();
     const sevenDaysAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
     const fourteenDaysAgo = new Date(now.getTime() - 14 * 24 * 60 * 60 * 1000);

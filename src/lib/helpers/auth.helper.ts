@@ -1,7 +1,7 @@
-import type { SupabaseClient } from '@supabase/supabase-js';
-import type { Database } from '../../db/database.types';
-import type { ApiErrorDTO } from '../../types';
-import type { AuthUser } from '../../env';
+import type { SupabaseClient } from "@supabase/supabase-js";
+import type { Database } from "../../db/database.types";
+import type { ApiErrorDTO } from "../../types";
+import type { AuthUser } from "../../env";
 
 type SupabaseClientType = SupabaseClient<Database>;
 
@@ -21,7 +21,7 @@ export type AuthCheckResult = AuthResult | AuthError;
  * Extract token from Authorization header
  */
 export function extractBearerToken(authHeader: string | null): string | null {
-  if (!authHeader || !authHeader.startsWith('Bearer ')) {
+  if (!authHeader || !authHeader.startsWith("Bearer ")) {
     return null;
   }
   return authHeader.slice(7);
@@ -48,7 +48,7 @@ export async function verifyAuth(
     return {
       error: {
         status: 401,
-        body: { code: 'UNAUTHORIZED', message: 'Authentication required' },
+        body: { code: "UNAUTHORIZED", message: "Authentication required" },
       },
     };
   }
@@ -62,7 +62,7 @@ export async function verifyAuth(
     return {
       error: {
         status: 401,
-        body: { code: 'UNAUTHORIZED', message: 'No active session' },
+        body: { code: "UNAUTHORIZED", message: "No active session" },
       },
     };
   }

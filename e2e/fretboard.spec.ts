@@ -122,11 +122,7 @@ test.describe("Fretboard Component", () => {
     });
 
     // FRET-012 & FRET-013
-    test("should show correct/incorrect feedback colors", async ({
-      quizHubPage,
-      quizActivePage,
-      page,
-    }) => {
+    test("should show correct/incorrect feedback colors", async ({ quizHubPage, quizActivePage, page }) => {
       await quizHubPage.goto();
       await quizHubPage.selectAndStartQuiz("find_note", "easy");
 
@@ -145,11 +141,7 @@ test.describe("Fretboard Component", () => {
     });
 
     // FRET-014
-    test("should allow multi-select in mark chord quiz", async ({
-      quizHubPage,
-      quizActivePage,
-      page,
-    }) => {
+    test("should allow multi-select in mark chord quiz", async ({ quizHubPage, quizActivePage, page }) => {
       await quizHubPage.goto();
       await quizHubPage.selectAndStartQuiz("mark_chord", "easy");
 

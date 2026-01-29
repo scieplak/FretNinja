@@ -140,26 +140,25 @@ const ProfileView = ({ user }: ProfileViewProps) => {
       <section className="grid gap-4 sm:grid-cols-3">
         <div className="rounded-2xl border border-white/10 bg-white/5 p-5">
           <p className="text-xs uppercase tracking-[0.2em] text-slate-400">Current streak</p>
-          <p className="mt-2 text-2xl font-semibold text-white">
-            {isLoading ? "—" : stats?.current_streak ?? 0}
-          </p>
+          <p className="mt-2 text-2xl font-semibold text-white">{isLoading ? "—" : (stats?.current_streak ?? 0)}</p>
         </div>
         <div className="rounded-2xl border border-white/10 bg-white/5 p-5">
           <p className="text-xs uppercase tracking-[0.2em] text-slate-400">Longest streak</p>
-          <p className="mt-2 text-2xl font-semibold text-white">
-            {isLoading ? "—" : stats?.longest_streak ?? 0}
-          </p>
+          <p className="mt-2 text-2xl font-semibold text-white">{isLoading ? "—" : (stats?.longest_streak ?? 0)}</p>
         </div>
         <div className="rounded-2xl border border-white/10 bg-white/5 p-5">
           <p className="text-xs uppercase tracking-[0.2em] text-slate-400">Total quizzes</p>
-          <p className="mt-2 text-2xl font-semibold text-white">{isLoading ? "—" : stats?.total_quizzes ?? 0}</p>
+          <p className="mt-2 text-2xl font-semibold text-white">{isLoading ? "—" : (stats?.total_quizzes ?? 0)}</p>
         </div>
       </section>
 
       <section className="rounded-2xl border border-white/10 bg-white/5 p-6">
         <h2 className="text-lg font-semibold text-white">Quick links</h2>
         <div className="mt-4 flex flex-wrap gap-3 text-sm text-slate-300">
-          <a href="/progress" className="rounded-full border border-white/10 bg-slate-950/60 px-4 py-2 hover:text-emerald-200">
+          <a
+            href="/progress"
+            className="rounded-full border border-white/10 bg-slate-950/60 px-4 py-2 hover:text-emerald-200"
+          >
             View progress
           </a>
           <a
@@ -168,7 +167,10 @@ const ProfileView = ({ user }: ProfileViewProps) => {
           >
             View achievements
           </a>
-          <a href="/settings" className="rounded-full border border-white/10 bg-slate-950/60 px-4 py-2 hover:text-emerald-200">
+          <a
+            href="/settings"
+            className="rounded-full border border-white/10 bg-slate-950/60 px-4 py-2 hover:text-emerald-200"
+          >
             Settings
           </a>
         </div>

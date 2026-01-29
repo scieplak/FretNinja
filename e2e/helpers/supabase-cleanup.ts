@@ -76,36 +76,29 @@ export async function cleanupUserQuizSessions(): Promise<void> {
 
   try {
     // Get current user
-    const { data: { user } } = await supabase.auth.getUser();
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
     if (!user) {
       console.warn("No authenticated user for cleanup");
       return;
     }
 
     // Get all session IDs for this user
-    const { data: sessions } = await supabase
-      .from("quiz_sessions")
-      .select("id")
-      .eq("user_id", user.id);
+    const { data: sessions } = await supabase.from("quiz_sessions").select("id").eq("user_id", user.id);
 
     if (sessions && sessions.length > 0) {
       const sessionIds = sessions.map((s) => s.id);
 
       // Delete quiz answers first (foreign key constraint)
-      const { error: answersError } = await supabase
-        .from("quiz_answers")
-        .delete()
-        .in("session_id", sessionIds);
+      const { error: answersError } = await supabase.from("quiz_answers").delete().in("session_id", sessionIds);
 
       if (answersError) {
         console.error("Error deleting quiz answers:", answersError.message);
       }
 
       // Delete quiz sessions
-      const { error: sessionsError } = await supabase
-        .from("quiz_sessions")
-        .delete()
-        .eq("user_id", user.id);
+      const { error: sessionsError } = await supabase.from("quiz_sessions").delete().eq("user_id", user.id);
 
       if (sessionsError) {
         console.error("Error deleting quiz sessions:", sessionsError.message);
@@ -124,13 +117,12 @@ export async function cleanupUserAchievements(): Promise<void> {
   if (!supabase) return;
 
   try {
-    const { data: { user } } = await supabase.auth.getUser();
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
     if (!user) return;
 
-    const { error } = await supabase
-      .from("user_achievements")
-      .delete()
-      .eq("user_id", user.id);
+    const { error } = await supabase.from("user_achievements").delete().eq("user_id", user.id);
 
     if (error) {
       console.error("Error deleting user achievements:", error.message);
@@ -167,7 +159,9 @@ export async function ensureTestUserProfile(): Promise<void> {
   if (!supabase) return;
 
   try {
-    const { data: { user } } = await supabase.auth.getUser();
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
     if (!user) {
       console.warn("No authenticated user for profile check");
       return;
@@ -184,9 +178,7 @@ export async function ensureTestUserProfile(): Promise<void> {
       // Profile doesn't exist - create it
       console.log(`Creating missing profile for test user: ${user.id}`);
 
-      const { error: insertError } = await supabase
-        .from("profiles")
-        .insert({ id: user.id });
+      const { error: insertError } = await supabase.from("profiles").insert({ id: user.id });
 
       if (insertError) {
         console.error("Failed to create test user profile:", insertError.message);

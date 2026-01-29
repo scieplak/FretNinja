@@ -1,25 +1,25 @@
-import type { APIRoute } from 'astro';
+import type { APIRoute } from "astro";
 
-import { createSupabaseServerInstance } from '../../../db/supabase.client';
-import { loginCommandSchema } from '../../../lib/schemas/auth.schemas';
-import type { ApiErrorDTO, LoginResponseDTO } from '../../../types';
+import { createSupabaseServerInstance } from "../../../db/supabase.client";
+import { loginCommandSchema } from "../../../lib/schemas/auth.schemas";
+import type { ApiErrorDTO, LoginResponseDTO } from "../../../types";
 
 export const prerender = false;
 
 function mapLoginError(error: Error): { status: number; body: ApiErrorDTO } {
   const message = error.message.toLowerCase();
 
-  if (message.includes('invalid login credentials') || message.includes('email not confirmed')) {
+  if (message.includes("invalid login credentials") || message.includes("email not confirmed")) {
     return {
       status: 401,
-      body: { code: 'INVALID_CREDENTIALS', message: 'Invalid email or password' },
+      body: { code: "INVALID_CREDENTIALS", message: "Invalid email or password" },
     };
   }
 
-  console.error('Login error:', error.message);
+  console.error("Login error:", error.message);
   return {
     status: 500,
-    body: { code: 'SERVER_ERROR', message: 'Login failed' },
+    body: { code: "SERVER_ERROR", message: "Login failed" },
   };
 }
 
@@ -29,9 +29,9 @@ export const POST: APIRoute = async ({ request, cookies }) => {
   try {
     body = await request.json();
   } catch {
-    return new Response(JSON.stringify({ code: 'VALIDATION_ERROR', message: 'Invalid JSON body' }), {
+    return new Response(JSON.stringify({ code: "VALIDATION_ERROR", message: "Invalid JSON body" }), {
       status: 400,
-      headers: { 'Content-Type': 'application/json' },
+      headers: { "Content-Type": "application/json" },
     });
   }
 
@@ -40,10 +40,10 @@ export const POST: APIRoute = async ({ request, cookies }) => {
   if (!validation.success) {
     return new Response(
       JSON.stringify({
-        code: 'VALIDATION_ERROR',
-        message: 'Email and password are required',
+        code: "VALIDATION_ERROR",
+        message: "Email and password are required",
       }),
-      { status: 400, headers: { 'Content-Type': 'application/json' } }
+      { status: 400, headers: { "Content-Type": "application/json" } }
     );
   }
 
@@ -63,14 +63,14 @@ export const POST: APIRoute = async ({ request, cookies }) => {
     const mappedError = mapLoginError(error);
     return new Response(JSON.stringify(mappedError.body), {
       status: mappedError.status,
-      headers: { 'Content-Type': 'application/json' },
+      headers: { "Content-Type": "application/json" },
     });
   }
 
   if (!data.user || !data.session) {
-    return new Response(JSON.stringify({ code: 'SERVER_ERROR', message: 'Login failed' }), {
+    return new Response(JSON.stringify({ code: "SERVER_ERROR", message: "Login failed" }), {
       status: 500,
-      headers: { 'Content-Type': 'application/json' },
+      headers: { "Content-Type": "application/json" },
     });
   }
 
@@ -84,6 +84,6 @@ export const POST: APIRoute = async ({ request, cookies }) => {
 
   return new Response(JSON.stringify(response), {
     status: 200,
-    headers: { 'Content-Type': 'application/json' },
+    headers: { "Content-Type": "application/json" },
   });
 };

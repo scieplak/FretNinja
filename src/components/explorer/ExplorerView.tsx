@@ -16,18 +16,18 @@ const CHORD_OPTIONS: { label: string; value: ChordTypeEnum }[] = [
 
 // Scale intervals (semitones from root)
 const SCALE_INTERVALS: Record<string, number[]> = {
-  "Major Scale": [0, 2, 4, 5, 7, 9, 11],      // W-W-H-W-W-W-H
-  "Natural Minor": [0, 2, 3, 5, 7, 8, 10],    // W-H-W-W-H-W-W
-  "Pentatonic Major": [0, 2, 4, 7, 9],        // 1-2-3-5-6
-  "Pentatonic Minor": [0, 3, 5, 7, 10],       // 1-b3-4-5-b7
+  "Major Scale": [0, 2, 4, 5, 7, 9, 11], // W-W-H-W-W-W-H
+  "Natural Minor": [0, 2, 3, 5, 7, 8, 10], // W-H-W-W-H-W-W
+  "Pentatonic Major": [0, 2, 4, 7, 9], // 1-2-3-5-6
+  "Pentatonic Minor": [0, 3, 5, 7, 10], // 1-b3-4-5-b7
 };
 
 // Chord intervals (semitones from root)
 const CHORD_INTERVALS: Record<ChordTypeEnum, number[]> = {
-  major: [0, 4, 7],       // 1-3-5
-  minor: [0, 3, 7],       // 1-b3-5
-  diminished: [0, 3, 6],  // 1-b3-b5
-  augmented: [0, 4, 8],   // 1-3-#5
+  major: [0, 4, 7], // 1-3-5
+  minor: [0, 3, 7], // 1-b3-5
+  diminished: [0, 3, 6], // 1-b3-b5
+  augmented: [0, 4, 8], // 1-3-#5
 };
 
 // Get notes in a scale or chord
@@ -111,7 +111,7 @@ const ExplorerView = () => {
 
       const data = (await response.json()) as AIHintResponseDTO;
       setHint(data);
-    } catch (error) {
+    } catch {
       setHintError("Network error. Please check your connection.");
     } finally {
       setIsLoadingHint(false);
@@ -126,9 +126,10 @@ const ExplorerView = () => {
     const positions = getFretboardPositions(fretRange);
 
     // Get the pattern notes based on scale or chord
-    const intervals = patternType === "scale"
-      ? SCALE_INTERVALS[scale] || SCALE_INTERVALS["Major Scale"]
-      : CHORD_INTERVALS[chordType] || CHORD_INTERVALS.major;
+    const intervals =
+      patternType === "scale"
+        ? SCALE_INTERVALS[scale] || SCALE_INTERVALS["Major Scale"]
+        : CHORD_INTERVALS[chordType] || CHORD_INTERVALS.major;
 
     const patternNotes = getPatternNotes(rootNote, intervals);
     const patternNoteSet = new Set(patternNotes);
@@ -146,15 +147,22 @@ const ExplorerView = () => {
       <section className="order-2 min-w-0 flex-1 space-y-4 lg:order-1">
         <header className="space-y-1 sm:space-y-2">
           <p className="text-xs font-semibold uppercase tracking-[0.3em] text-emerald-300">Explorer mode</p>
-          <h1 className="text-xl font-semibold text-white sm:text-2xl" data-testid="explorer-heading">Explore notes, scales, and chords</h1>
+          <h1 className="text-xl font-semibold text-white sm:text-2xl" data-testid="explorer-heading">
+            Explore notes, scales, and chords
+          </h1>
           <p className="text-xs text-slate-300 sm:text-sm">Tap the fretboard to see patterns across the neck.</p>
         </header>
 
-        <div className="rounded-2xl border border-white/10 bg-white/5 p-3 sm:p-6" data-testid="explorer-fretboard-section">
+        <div
+          className="rounded-2xl border border-white/10 bg-white/5 p-3 sm:p-6"
+          data-testid="explorer-fretboard-section"
+        >
           <div className="flex items-center justify-between gap-2">
             <div>
               <p className="text-xs uppercase tracking-[0.2em] text-slate-400">Overlay</p>
-              <p className="text-sm text-white sm:text-base" data-testid="explorer-overlay-label">{overlayLabel}</p>
+              <p className="text-sm text-white sm:text-base" data-testid="explorer-overlay-label">
+                {overlayLabel}
+              </p>
             </div>
             <button
               type="button"
@@ -182,21 +190,34 @@ const ExplorerView = () => {
         </div>
 
         {hintError ? (
-          <div className="rounded-2xl border border-rose-500/40 bg-rose-500/10 px-6 py-4 text-sm text-rose-200" data-testid="explorer-hint-error">
+          <div
+            className="rounded-2xl border border-rose-500/40 bg-rose-500/10 px-6 py-4 text-sm text-rose-200"
+            data-testid="explorer-hint-error"
+          >
             {hintError}
           </div>
         ) : null}
 
         {hint ? (
-          <div className="rounded-2xl border border-emerald-400/30 bg-emerald-400/10 px-6 py-4 text-sm text-emerald-100" data-testid="explorer-hint-result">
+          <div
+            className="rounded-2xl border border-emerald-400/30 bg-emerald-400/10 px-6 py-4 text-sm text-emerald-100"
+            data-testid="explorer-hint-result"
+          >
             <p className="font-semibold">Tip</p>
-            <p className="mt-2 text-slate-100" data-testid="explorer-hint-text">{hint.hint}</p>
-            <p className="mt-3 text-xs text-slate-200" data-testid="explorer-hint-memorization">Memorization: {hint.memorization_tip}</p>
+            <p className="mt-2 text-slate-100" data-testid="explorer-hint-text">
+              {hint.hint}
+            </p>
+            <p className="mt-3 text-xs text-slate-200" data-testid="explorer-hint-memorization">
+              Memorization: {hint.memorization_tip}
+            </p>
           </div>
         ) : null}
       </section>
 
-      <aside className="order-1 shrink-0 space-y-6 rounded-2xl border border-white/10 bg-white/5 p-4 lg:order-2 lg:w-72 lg:p-6" data-testid="explorer-controls">
+      <aside
+        className="order-1 shrink-0 space-y-6 rounded-2xl border border-white/10 bg-white/5 p-4 lg:order-2 lg:w-72 lg:p-6"
+        data-testid="explorer-controls"
+      >
         <div data-testid="explorer-root-note-section">
           <p className="text-xs uppercase tracking-[0.2em] text-slate-400">Root note</p>
           <div className="mt-3 grid grid-cols-6 gap-2" data-testid="explorer-root-note-grid">

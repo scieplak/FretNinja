@@ -111,9 +111,7 @@ const PasswordResetForm = () => {
           }
         }
 
-        setMessage(
-          "If that email exists, you'll receive a reset link shortly. Check your inbox and spam folder."
-        );
+        setMessage("If that email exists, you'll receive a reset link shortly. Check your inbox and spam folder.");
       } catch {
         setErrorMessage("Network error. Please check your connection and try again.");
       } finally {

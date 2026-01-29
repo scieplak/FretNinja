@@ -131,7 +131,9 @@ test.describe("Guest Quiz Flow", () => {
       // Timer should have warning styling
       const timer = quizActivePage.timer;
       const hasWarningClass = await timer.evaluate((el) => {
-        return el.classList.contains("warning") || el.classList.contains("text-red") || el.classList.contains("animate");
+        return (
+          el.classList.contains("warning") || el.classList.contains("text-red") || el.classList.contains("animate")
+        );
       });
 
       expect(hasWarningClass).toBe(true);
@@ -198,11 +200,7 @@ test.describe("Guest Quiz Flow", () => {
   });
 
   test.describe("Guest Data Non-Persistence", () => {
-    test("should not persist quiz data after page reload for guest", async ({
-      quizHubPage,
-      quizActivePage,
-      page,
-    }) => {
+    test("should not persist quiz data after page reload for guest", async ({ quizHubPage, quizActivePage, page }) => {
       await quizHubPage.goto();
       await quizHubPage.selectAndStartQuiz("find_note", "easy");
 

@@ -3,48 +3,48 @@
  * All types are derived from database models in ./db/database.types.ts
  */
 
-import type { Tables, Enums } from './db/database.types';
+import type { Tables, Enums } from "./db/database.types";
 
 // =============================================================================
 // Database Entity Aliases
 // =============================================================================
 
 /** Profile entity row type from database */
-export type ProfileEntity = Tables<'profiles'>;
+export type ProfileEntity = Tables<"profiles">;
 
 /** Quiz session entity row type from database */
-export type QuizSessionEntity = Tables<'quiz_sessions'>;
+export type QuizSessionEntity = Tables<"quiz_sessions">;
 
 /** Quiz answer entity row type from database */
-export type QuizAnswerEntity = Tables<'quiz_answers'>;
+export type QuizAnswerEntity = Tables<"quiz_answers">;
 
 /** Achievement entity row type from database */
-export type AchievementEntity = Tables<'achievements'>;
+export type AchievementEntity = Tables<"achievements">;
 
 /** User achievement entity row type from database */
-export type UserAchievementEntity = Tables<'user_achievements'>;
+export type UserAchievementEntity = Tables<"user_achievements">;
 
 // =============================================================================
 // Enum Type Aliases
 // =============================================================================
 
 /** Musical note values (C, C#, D, etc.) */
-export type NoteEnum = Enums<'note_enum'>;
+export type NoteEnum = Enums<"note_enum">;
 
 /** Musical interval values (minor_2nd, major_2nd, etc.) */
-export type IntervalEnum = Enums<'interval_enum'>;
+export type IntervalEnum = Enums<"interval_enum">;
 
 /** Chord type values (major, minor, diminished, augmented) */
-export type ChordTypeEnum = Enums<'chord_type_enum'>;
+export type ChordTypeEnum = Enums<"chord_type_enum">;
 
 /** Quiz type values (find_note, name_note, mark_chord, recognize_interval) */
-export type QuizTypeEnum = Enums<'quiz_type_enum'>;
+export type QuizTypeEnum = Enums<"quiz_type_enum">;
 
 /** Difficulty level values (easy, medium, hard) */
-export type DifficultyEnum = Enums<'difficulty_enum'>;
+export type DifficultyEnum = Enums<"difficulty_enum">;
 
 /** Session status values (in_progress, completed, abandoned) */
-export type SessionStatusEnum = Enums<'session_status_enum'>;
+export type SessionStatusEnum = Enums<"session_status_enum">;
 
 // =============================================================================
 // Common Types
@@ -171,14 +171,14 @@ export interface CreateQuizSessionCommand {
  * Contains essential session fields for the client.
  */
 export interface QuizSessionDTO {
-  id: QuizSessionEntity['id'];
-  user_id: QuizSessionEntity['user_id'];
-  quiz_type: QuizSessionEntity['quiz_type'];
-  difficulty: QuizSessionEntity['difficulty'];
-  status: QuizSessionEntity['status'];
-  time_limit_seconds: QuizSessionEntity['time_limit_seconds'];
-  started_at: QuizSessionEntity['started_at'];
-  created_at: QuizSessionEntity['created_at'];
+  id: QuizSessionEntity["id"];
+  user_id: QuizSessionEntity["user_id"];
+  quiz_type: QuizSessionEntity["quiz_type"];
+  difficulty: QuizSessionEntity["difficulty"];
+  status: QuizSessionEntity["status"];
+  time_limit_seconds: QuizSessionEntity["time_limit_seconds"];
+  started_at: QuizSessionEntity["started_at"];
+  created_at: QuizSessionEntity["created_at"];
 }
 
 /**
@@ -186,14 +186,14 @@ export interface QuizSessionDTO {
  * Contains a subset of fields optimized for list display.
  */
 export interface QuizSessionListItemDTO {
-  id: QuizSessionEntity['id'];
-  quiz_type: QuizSessionEntity['quiz_type'];
-  difficulty: QuizSessionEntity['difficulty'];
-  score: QuizSessionEntity['score'];
-  status: QuizSessionEntity['status'];
-  time_taken_seconds: QuizSessionEntity['time_taken_seconds'];
-  started_at: QuizSessionEntity['started_at'];
-  completed_at: QuizSessionEntity['completed_at'];
+  id: QuizSessionEntity["id"];
+  quiz_type: QuizSessionEntity["quiz_type"];
+  difficulty: QuizSessionEntity["difficulty"];
+  score: QuizSessionEntity["score"];
+  status: QuizSessionEntity["status"];
+  time_taken_seconds: QuizSessionEntity["time_taken_seconds"];
+  started_at: QuizSessionEntity["started_at"];
+  completed_at: QuizSessionEntity["completed_at"];
 }
 
 /** Response for quiz session list endpoint with pagination */
@@ -207,20 +207,20 @@ export interface QuizSessionListDTO {
  * Contains answer fields relevant to the quiz type.
  */
 export interface QuizAnswerSummaryDTO {
-  question_number: QuizAnswerEntity['question_number'];
-  is_correct: QuizAnswerEntity['is_correct'];
-  time_taken_ms: QuizAnswerEntity['time_taken_ms'];
-  fret_position: QuizAnswerEntity['fret_position'];
-  string_number: QuizAnswerEntity['string_number'];
-  target_note: QuizAnswerEntity['target_note'];
-  target_interval: QuizAnswerEntity['target_interval'];
-  target_root_note: QuizAnswerEntity['target_root_note'];
-  target_chord_type: QuizAnswerEntity['target_chord_type'];
-  reference_fret_position: QuizAnswerEntity['reference_fret_position'];
-  reference_string_number: QuizAnswerEntity['reference_string_number'];
-  user_answer_note: QuizAnswerEntity['user_answer_note'];
-  user_answer_interval: QuizAnswerEntity['user_answer_interval'];
-  user_answer_positions: QuizAnswerEntity['user_answer_positions'];
+  question_number: QuizAnswerEntity["question_number"];
+  is_correct: QuizAnswerEntity["is_correct"];
+  time_taken_ms: QuizAnswerEntity["time_taken_ms"];
+  fret_position: QuizAnswerEntity["fret_position"];
+  string_number: QuizAnswerEntity["string_number"];
+  target_note: QuizAnswerEntity["target_note"];
+  target_interval: QuizAnswerEntity["target_interval"];
+  target_root_note: QuizAnswerEntity["target_root_note"];
+  target_chord_type: QuizAnswerEntity["target_chord_type"];
+  reference_fret_position: QuizAnswerEntity["reference_fret_position"];
+  reference_string_number: QuizAnswerEntity["reference_string_number"];
+  user_answer_note: QuizAnswerEntity["user_answer_note"];
+  user_answer_interval: QuizAnswerEntity["user_answer_interval"];
+  user_answer_positions: QuizAnswerEntity["user_answer_positions"];
 }
 
 /**
@@ -228,16 +228,16 @@ export interface QuizAnswerSummaryDTO {
  * Returned when fetching a specific session by ID.
  */
 export interface QuizSessionDetailDTO {
-  id: QuizSessionEntity['id'];
-  user_id: QuizSessionEntity['user_id'];
-  quiz_type: QuizSessionEntity['quiz_type'];
-  difficulty: QuizSessionEntity['difficulty'];
-  score: QuizSessionEntity['score'];
-  status: QuizSessionEntity['status'];
-  time_limit_seconds: QuizSessionEntity['time_limit_seconds'];
-  time_taken_seconds: QuizSessionEntity['time_taken_seconds'];
-  started_at: QuizSessionEntity['started_at'];
-  completed_at: QuizSessionEntity['completed_at'];
+  id: QuizSessionEntity["id"];
+  user_id: QuizSessionEntity["user_id"];
+  quiz_type: QuizSessionEntity["quiz_type"];
+  difficulty: QuizSessionEntity["difficulty"];
+  score: QuizSessionEntity["score"];
+  status: QuizSessionEntity["status"];
+  time_limit_seconds: QuizSessionEntity["time_limit_seconds"];
+  time_taken_seconds: QuizSessionEntity["time_taken_seconds"];
+  started_at: QuizSessionEntity["started_at"];
+  completed_at: QuizSessionEntity["completed_at"];
   answers: QuizAnswerSummaryDTO[];
 }
 
@@ -246,15 +246,15 @@ export interface QuizSessionDetailDTO {
  * Only status and time_taken_seconds can be updated.
  */
 export interface UpdateQuizSessionCommand {
-  status: Extract<SessionStatusEnum, 'completed' | 'abandoned'>;
+  status: Extract<SessionStatusEnum, "completed" | "abandoned">;
   time_taken_seconds?: number;
 }
 
 /** Achievement info returned when earned during session completion */
 export interface AchievementEarnedDTO {
-  id: AchievementEntity['id'];
-  name: AchievementEntity['name'];
-  display_name: AchievementEntity['display_name'];
+  id: AchievementEntity["id"];
+  name: AchievementEntity["name"];
+  display_name: AchievementEntity["display_name"];
 }
 
 /**
@@ -262,15 +262,15 @@ export interface AchievementEarnedDTO {
  * Includes any newly earned achievements.
  */
 export interface UpdateQuizSessionResponseDTO {
-  id: QuizSessionEntity['id'];
-  user_id: QuizSessionEntity['user_id'];
-  quiz_type: QuizSessionEntity['quiz_type'];
-  difficulty: QuizSessionEntity['difficulty'];
-  score: QuizSessionEntity['score'];
-  status: QuizSessionEntity['status'];
-  time_taken_seconds: QuizSessionEntity['time_taken_seconds'];
-  started_at: QuizSessionEntity['started_at'];
-  completed_at: QuizSessionEntity['completed_at'];
+  id: QuizSessionEntity["id"];
+  user_id: QuizSessionEntity["user_id"];
+  quiz_type: QuizSessionEntity["quiz_type"];
+  difficulty: QuizSessionEntity["difficulty"];
+  score: QuizSessionEntity["score"];
+  status: QuizSessionEntity["status"];
+  time_taken_seconds: QuizSessionEntity["time_taken_seconds"];
+  started_at: QuizSessionEntity["started_at"];
+  completed_at: QuizSessionEntity["completed_at"];
   achievements_earned: AchievementEarnedDTO[];
 }
 
@@ -313,32 +313,32 @@ export interface CreateQuizAnswerCommand {
 
 /** Full quiz answer DTO with all fields */
 export interface QuizAnswerDTO {
-  id: QuizAnswerEntity['id'];
-  session_id: QuizAnswerEntity['session_id'];
-  question_number: QuizAnswerEntity['question_number'];
-  is_correct: QuizAnswerEntity['is_correct'];
-  time_taken_ms: QuizAnswerEntity['time_taken_ms'];
-  fret_position: QuizAnswerEntity['fret_position'];
-  string_number: QuizAnswerEntity['string_number'];
-  target_note: QuizAnswerEntity['target_note'];
-  user_answer_note: QuizAnswerEntity['user_answer_note'];
-  target_root_note: QuizAnswerEntity['target_root_note'];
-  target_chord_type: QuizAnswerEntity['target_chord_type'];
-  user_answer_positions: QuizAnswerEntity['user_answer_positions'];
-  target_interval: QuizAnswerEntity['target_interval'];
-  reference_fret_position: QuizAnswerEntity['reference_fret_position'];
-  reference_string_number: QuizAnswerEntity['reference_string_number'];
-  user_answer_interval: QuizAnswerEntity['user_answer_interval'];
-  created_at: QuizAnswerEntity['created_at'];
+  id: QuizAnswerEntity["id"];
+  session_id: QuizAnswerEntity["session_id"];
+  question_number: QuizAnswerEntity["question_number"];
+  is_correct: QuizAnswerEntity["is_correct"];
+  time_taken_ms: QuizAnswerEntity["time_taken_ms"];
+  fret_position: QuizAnswerEntity["fret_position"];
+  string_number: QuizAnswerEntity["string_number"];
+  target_note: QuizAnswerEntity["target_note"];
+  user_answer_note: QuizAnswerEntity["user_answer_note"];
+  target_root_note: QuizAnswerEntity["target_root_note"];
+  target_chord_type: QuizAnswerEntity["target_chord_type"];
+  user_answer_positions: QuizAnswerEntity["user_answer_positions"];
+  target_interval: QuizAnswerEntity["target_interval"];
+  reference_fret_position: QuizAnswerEntity["reference_fret_position"];
+  reference_string_number: QuizAnswerEntity["reference_string_number"];
+  user_answer_interval: QuizAnswerEntity["user_answer_interval"];
+  created_at: QuizAnswerEntity["created_at"];
 }
 
 /** Response for creating a quiz answer */
 export interface CreateQuizAnswerResponseDTO {
-  id: QuizAnswerEntity['id'];
-  session_id: QuizAnswerEntity['session_id'];
-  question_number: QuizAnswerEntity['question_number'];
-  is_correct: QuizAnswerEntity['is_correct'];
-  created_at: QuizAnswerEntity['created_at'];
+  id: QuizAnswerEntity["id"];
+  session_id: QuizAnswerEntity["session_id"];
+  question_number: QuizAnswerEntity["question_number"];
+  is_correct: QuizAnswerEntity["is_correct"];
+  created_at: QuizAnswerEntity["created_at"];
 }
 
 /** Response for listing quiz answers */
@@ -364,19 +364,19 @@ export interface AchievementsListDTO {
 
 /** User's earned achievement with earned date */
 export interface UserEarnedAchievementDTO {
-  id: AchievementEntity['id'];
-  name: AchievementEntity['name'];
-  display_name: AchievementEntity['display_name'];
-  description: AchievementEntity['description'];
-  earned_at: UserAchievementEntity['earned_at'];
+  id: AchievementEntity["id"];
+  name: AchievementEntity["name"];
+  display_name: AchievementEntity["display_name"];
+  description: AchievementEntity["description"];
+  earned_at: UserAchievementEntity["earned_at"];
 }
 
 /** Progress toward an unearned achievement */
 export interface AchievementProgressDTO {
-  id: AchievementEntity['id'];
-  name: AchievementEntity['name'];
-  display_name: AchievementEntity['display_name'];
-  description: AchievementEntity['description'];
+  id: AchievementEntity["id"];
+  name: AchievementEntity["name"];
+  display_name: AchievementEntity["display_name"];
+  description: AchievementEntity["description"];
   current: number;
   target: number;
   percentage: number;
@@ -463,8 +463,8 @@ export interface RecentTrendDTO {
 export interface StatsOverviewDTO {
   total_quizzes: number;
   total_time_seconds: number;
-  current_streak: ProfileEntity['current_streak'];
-  longest_streak: ProfileEntity['longest_streak'];
+  current_streak: ProfileEntity["current_streak"];
+  longest_streak: ProfileEntity["longest_streak"];
   by_quiz_type: {
     find_note: QuizTypeStatsDTO;
     name_note: QuizTypeStatsDTO;
@@ -484,7 +484,7 @@ export interface StatsOverviewDTO {
 // =============================================================================
 
 /** Context type for AI hint requests */
-export type AIHintContextEnum = 'quiz' | 'explorer';
+export type AIHintContextEnum = "quiz" | "explorer";
 
 /**
  * Command to request an AI hint.
@@ -556,17 +556,17 @@ export interface ApiErrorDTO {
 
 /** API error codes used across endpoints */
 export type ApiErrorCode =
-  | 'VALIDATION_ERROR'
-  | 'UNAUTHORIZED'
-  | 'FORBIDDEN'
-  | 'NOT_FOUND'
-  | 'EMAIL_EXISTS'
-  | 'INVALID_CREDENTIALS'
-  | 'INVALID_TOKEN'
-  | 'SESSION_IN_PROGRESS'
-  | 'SESSION_NOT_ACTIVE'
-  | 'ALREADY_FINALIZED'
-  | 'INSUFFICIENT_DATA'
-  | 'RATE_LIMITED'
-  | 'AI_UNAVAILABLE'
-  | 'SERVER_ERROR';
+  | "VALIDATION_ERROR"
+  | "UNAUTHORIZED"
+  | "FORBIDDEN"
+  | "NOT_FOUND"
+  | "EMAIL_EXISTS"
+  | "INVALID_CREDENTIALS"
+  | "INVALID_TOKEN"
+  | "SESSION_IN_PROGRESS"
+  | "SESSION_NOT_ACTIVE"
+  | "ALREADY_FINALIZED"
+  | "INSUFFICIENT_DATA"
+  | "RATE_LIMITED"
+  | "AI_UNAVAILABLE"
+  | "SERVER_ERROR";

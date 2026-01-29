@@ -35,9 +35,7 @@ test.describe("Authentication", () => {
       await registerPage.register(existingEmail, "SecurePassword123!");
 
       // Should show error message about existing email
-      await expect(
-        page.getByRole("alert").or(page.getByTestId("register-error"))
-      ).toBeVisible({ timeout: 5000 });
+      await expect(page.getByRole("alert").or(page.getByTestId("register-error"))).toBeVisible({ timeout: 5000 });
 
       const error = await registerPage.getErrorMessage();
       expect(error?.toLowerCase()).toMatch(/already|exists/i);
@@ -235,8 +233,14 @@ test.describe("Authentication", () => {
       // Should be redirected to login OR show guest/unauthenticated state
       const url = page.url();
       const hasLoginRedirect = url.includes("login");
-      const hasGuestPrompt = await page.getByTestId("dashboard-guest-prompt").isVisible().catch(() => false);
-      const hasRegisterLink = await page.getByTestId("dashboard-register-link").isVisible().catch(() => false);
+      const hasGuestPrompt = await page
+        .getByTestId("dashboard-guest-prompt")
+        .isVisible()
+        .catch(() => false);
+      const hasRegisterLink = await page
+        .getByTestId("dashboard-register-link")
+        .isVisible()
+        .catch(() => false);
 
       expect(hasLoginRedirect || hasGuestPrompt || hasRegisterLink).toBe(true);
     });

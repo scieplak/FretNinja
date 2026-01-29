@@ -55,7 +55,10 @@ export class ProgressPage extends BasePage {
 
     // Heatmap - using data-testid
     this.heatmapFretboard = page.getByTestId("progress-heatmap-container");
-    this.heatmapLegend = page.locator("div").filter({ hasText: /errors$/ }).first();
+    this.heatmapLegend = page
+      .locator("div")
+      .filter({ hasText: /errors$/ })
+      .first();
     this.errorHotspots = page.locator("div.rounded-lg.border.group");
 
     // Filters - using data-testid

@@ -1,5 +1,5 @@
-import type { SupabaseClient } from '@supabase/supabase-js';
-import type { Database } from '../../db/database.types';
+import type { SupabaseClient } from "@supabase/supabase-js";
+import type { Database } from "../../db/database.types";
 import type {
   AchievementDTO,
   AchievementsListDTO,
@@ -10,7 +10,7 @@ import type {
   ProfileEntity,
   QuizTypeEnum,
   ApiErrorDTO,
-} from '../../types';
+} from "../../types";
 
 type SupabaseClientType = SupabaseClient<Database>;
 
@@ -24,16 +24,16 @@ export class AchievementService {
 
   async listAchievements(): Promise<ServiceResult<AchievementsListDTO>> {
     const { data, error } = await this.supabase
-      .from('achievements')
-      .select('*')
-      .order('created_at', { ascending: true });
+      .from("achievements")
+      .select("*")
+      .order("created_at", { ascending: true });
 
     if (error) {
-      console.error('Failed to fetch achievements:', error.message);
+      console.error("Failed to fetch achievements:", error.message);
       return {
         error: {
           status: 500,
-          body: { code: 'SERVER_ERROR', message: 'Failed to fetch achievements' },
+          body: { code: "SERVER_ERROR", message: "Failed to fetch achievements" },
         },
       };
     }
@@ -47,41 +47,39 @@ export class AchievementService {
 
   async getUserAchievements(userId: string): Promise<ServiceResult<UserAchievementsDTO>> {
     // Fetch all achievements
-    const { data: allAchievements, error: achievementsError } = await this.supabase
-      .from('achievements')
-      .select('*');
+    const { data: allAchievements, error: achievementsError } = await this.supabase.from("achievements").select("*");
 
     if (achievementsError || !allAchievements) {
-      console.error('Failed to fetch achievements:', achievementsError?.message);
+      console.error("Failed to fetch achievements:", achievementsError?.message);
       return {
-        error: { status: 500, body: { code: 'SERVER_ERROR', message: 'Failed to fetch user achievements' } },
+        error: { status: 500, body: { code: "SERVER_ERROR", message: "Failed to fetch user achievements" } },
       };
     }
 
     // Fetch user's earned achievements
     const { data: userAchievements, error: userAchievementsError } = await this.supabase
-      .from('user_achievements')
-      .select('achievement_id, earned_at')
-      .eq('user_id', userId);
+      .from("user_achievements")
+      .select("achievement_id, earned_at")
+      .eq("user_id", userId);
 
     if (userAchievementsError) {
-      console.error('Failed to fetch user achievements:', userAchievementsError.message);
+      console.error("Failed to fetch user achievements:", userAchievementsError.message);
       return {
-        error: { status: 500, body: { code: 'SERVER_ERROR', message: 'Failed to fetch user achievements' } },
+        error: { status: 500, body: { code: "SERVER_ERROR", message: "Failed to fetch user achievements" } },
       };
     }
 
     // Fetch user's profile for progress calculation
     const { data: profile, error: profileError } = await this.supabase
-      .from('profiles')
-      .select('*')
-      .eq('id', userId)
+      .from("profiles")
+      .select("*")
+      .eq("id", userId)
       .single();
 
     if (profileError || !profile) {
-      console.error('Failed to fetch profile:', profileError?.message);
+      console.error("Failed to fetch profile:", profileError?.message);
       return {
-        error: { status: 500, body: { code: 'SERVER_ERROR', message: 'Failed to fetch user achievements' } },
+        error: { status: 500, body: { code: "SERVER_ERROR", message: "Failed to fetch user achievements" } },
       };
     }
 
@@ -131,23 +129,26 @@ export class AchievementService {
     let target = 1;
 
     switch (criteria.type) {
-      case 'total_quizzes':
+      case "total_quizzes":
         target = criteria.count as number;
         current =
-          profile.find_note_count + profile.name_note_count + profile.mark_chord_count + profile.recognize_interval_count;
+          profile.find_note_count +
+          profile.name_note_count +
+          profile.mark_chord_count +
+          profile.recognize_interval_count;
         break;
 
-      case 'perfect_score':
+      case "perfect_score":
         target = 1;
         current = 0;
         break;
 
-      case 'streak':
+      case "streak":
         target = criteria.days as number;
         current = profile.current_streak;
         break;
 
-      case 'quiz_count': {
+      case "quiz_count": {
         target = criteria.count as number;
         const quizType = criteria.quiz_type as string;
         const countField = `${quizType}_count` as keyof ProfileEntity;
@@ -171,14 +172,14 @@ export class AchievementService {
 
     // Get user's existing achievements
     const { data: existingAchievements } = await this.supabase
-      .from('user_achievements')
-      .select('achievement_id')
-      .eq('user_id', userId);
+      .from("user_achievements")
+      .select("achievement_id")
+      .eq("user_id", userId);
 
     const earnedIds = new Set(existingAchievements?.map((a) => a.achievement_id) || []);
 
     // Get all achievements
-    const { data: achievements } = await this.supabase.from('achievements').select('*');
+    const { data: achievements } = await this.supabase.from("achievements").select("*");
 
     if (!achievements) return earned;
 
@@ -190,22 +191,25 @@ export class AchievementService {
       let shouldGrant = false;
 
       switch (criteria.type) {
-        case 'total_quizzes': {
+        case "total_quizzes": {
           const totalQuizzes =
-            profile.find_note_count + profile.name_note_count + profile.mark_chord_count + profile.recognize_interval_count;
+            profile.find_note_count +
+            profile.name_note_count +
+            profile.mark_chord_count +
+            profile.recognize_interval_count;
           shouldGrant = totalQuizzes >= (criteria.count as number);
           break;
         }
 
-        case 'perfect_score':
+        case "perfect_score":
           shouldGrant = score === 10;
           break;
 
-        case 'streak':
+        case "streak":
           shouldGrant = profile.current_streak >= (criteria.days as number);
           break;
 
-        case 'quiz_count': {
+        case "quiz_count": {
           const countField = `${criteria.quiz_type}_count` as keyof ProfileEntity;
           shouldGrant = (profile[countField] as number) >= (criteria.count as number);
           break;
@@ -215,7 +219,7 @@ export class AchievementService {
       if (shouldGrant) {
         // Grant achievement - only add to earned if insert succeeds
         const { error } = await this.supabase
-          .from('user_achievements')
+          .from("user_achievements")
           .insert({ user_id: userId, achievement_id: achievement.id });
 
         // Skip if already earned (unique constraint violation) or other error

@@ -13,7 +13,8 @@ if (user) {
   <main id="main-content" class="min-h-screen bg-slate-950 text-white">
     <section class="relative overflow-hidden border-b border-white/5">
       <div class="absolute inset-0 bg-[radial-gradient(circle_at_top,_rgba(56,189,248,0.15),_transparent_55%)]"></div>
-      <div class="absolute inset-0 bg-[radial-gradient(circle_at_center,_rgba(16,185,129,0.12),_transparent_45%)]"></div>
+      <div class="absolute inset-0 bg-[radial-gradient(circle_at_center,_rgba(16,185,129,0.12),_transparent_45%)]">
+      </div>
       <div class="relative mx-auto flex max-w-6xl flex-col gap-12 px-6 py-20 lg:flex-row lg:items-center">
         <div class="flex-1 space-y-6">
           <p class="text-sm font-semibold uppercase tracking-[0.3em] text-emerald-300">FretNinja</p>
@@ -44,7 +45,10 @@ if (user) {
         </div>
         <div class="flex-1">
           <div class="relative rounded-2xl border border-white/10 bg-white/5 p-6 shadow-2xl">
-            <div class="absolute inset-0 rounded-2xl bg-gradient-to-br from-emerald-500/10 via-transparent to-purple-500/10"></div>
+            <div
+              class="absolute inset-0 rounded-2xl bg-gradient-to-br from-emerald-500/10 via-transparent to-purple-500/10"
+            >
+            </div>
             <svg
               viewBox="0 0 520 240"
               role="img"
@@ -53,12 +57,12 @@ if (user) {
             >
               <defs>
                 <linearGradient id="fretboard-bg" x1="0%" y1="0%" x2="0%" y2="100%">
-                  <stop offset="0%" stop-color="#451a03" stop-opacity="0.5" />
-                  <stop offset="100%" stop-color="#78350f" stop-opacity="0.25" />
+                  <stop offset="0%" stop-color="#451a03" stop-opacity="0.5"></stop>
+                  <stop offset="100%" stop-color="#78350f" stop-opacity="0.25"></stop>
                 </linearGradient>
               </defs>
               <!-- Fretboard background -->
-              <rect x="45" y="30" width="460" height="180" rx="12" fill="url(#fretboard-bg)" />
+              <rect x="45" y="30" width="460" height="180" rx="12" fill="url(#fretboard-bg)"></rect>
               <!-- Fret numbers at top -->
               <text x="70" y="20" fill="#64748b" font-size="9" text-anchor="middle">Open</text>
               <text x="115" y="20" fill="#64748b" font-size="9" text-anchor="middle">1</text>
@@ -71,23 +75,25 @@ if (user) {
               <text x="430" y="20" fill="#64748b" font-size="9" text-anchor="middle">8</text>
               <text x="475" y="20" fill="#64748b" font-size="9" text-anchor="middle">9</text>
               <!-- Nut (white bar after Open) -->
-              <rect x="92" y="30" width="5" height="180" fill="#e2e8f0" rx="1" />
+              <rect x="92" y="30" width="5" height="180" fill="#e2e8f0" rx="1"></rect>
               <!-- Fret bars (vertical) -->
-              {[137, 182, 227, 272, 317, 362, 407, 452, 497].map((x) => (
-                <line x1={x} y1="30" x2={x} y2="210" stroke="#475569" stroke-width="1.5" stroke-opacity="0.4" />
-              ))}
+              {
+                [137, 182, 227, 272, 317, 362, 407, 452, 497].map((x) => (
+                  <line x1={x} y1="30" x2={x} y2="210" stroke="#475569" stroke-width="1.5" stroke-opacity="0.4" />
+                ))
+              }
               <!-- Fret markers (dots) - at frets 3, 5, 7, 9 -->
-              <circle cx="205" cy="120" r="5" fill="#475569" opacity="0.4" />
-              <circle cx="295" cy="120" r="5" fill="#475569" opacity="0.4" />
-              <circle cx="385" cy="120" r="5" fill="#475569" opacity="0.4" />
-              <circle cx="475" cy="120" r="5" fill="#475569" opacity="0.4" />
+              <circle cx="205" cy="120" r="5" fill="#475569" opacity="0.4"></circle>
+              <circle cx="295" cy="120" r="5" fill="#475569" opacity="0.4"></circle>
+              <circle cx="385" cy="120" r="5" fill="#475569" opacity="0.4"></circle>
+              <circle cx="475" cy="120" r="5" fill="#475569" opacity="0.4"></circle>
               <!-- 6 strings (horizontal) -->
-              <line x1="45" y1="55" x2="505" y2="55" stroke="#9ca3af" stroke-width="1" />
-              <line x1="45" y1="85" x2="505" y2="85" stroke="#9ca3af" stroke-width="1.2" />
-              <line x1="45" y1="115" x2="505" y2="115" stroke="#9ca3af" stroke-width="1.5" />
-              <line x1="45" y1="145" x2="505" y2="145" stroke="#9ca3af" stroke-width="1.8" />
-              <line x1="45" y1="175" x2="505" y2="175" stroke="#9ca3af" stroke-width="2" />
-              <line x1="45" y1="205" x2="505" y2="205" stroke="#9ca3af" stroke-width="2.5" />
+              <line x1="45" y1="55" x2="505" y2="55" stroke="#9ca3af" stroke-width="1"></line>
+              <line x1="45" y1="85" x2="505" y2="85" stroke="#9ca3af" stroke-width="1.2"></line>
+              <line x1="45" y1="115" x2="505" y2="115" stroke="#9ca3af" stroke-width="1.5"></line>
+              <line x1="45" y1="145" x2="505" y2="145" stroke="#9ca3af" stroke-width="1.8"></line>
+              <line x1="45" y1="175" x2="505" y2="175" stroke="#9ca3af" stroke-width="2"></line>
+              <line x1="45" y1="205" x2="505" y2="205" stroke="#9ca3af" stroke-width="2.5"></line>
               <!-- String labels -->
               <text x="30" y="59" fill="#64748b" font-size="10" text-anchor="middle">E</text>
               <text x="30" y="89" fill="#64748b" font-size="10" text-anchor="middle">B</text>
@@ -96,22 +102,29 @@ if (user) {
               <text x="30" y="179" fill="#64748b" font-size="10" text-anchor="middle">A</text>
               <text x="30" y="209" fill="#64748b" font-size="10" text-anchor="middle">E</text>
               <!-- Position buttons (small circles) - sampling of positions -->
-              {[70, 115, 160, 205, 250, 295, 340, 385, 430, 475].map((x) => (
-                [55, 85, 115, 145, 175, 205].map((y) => (
-                  <circle cx={x} cy={y} r="8" fill="#1e293b" stroke="#334155" stroke-width="1" opacity="0.8" />
-                ))
-              ))}
+              {
+                [70, 115, 160, 205, 250, 295, 340, 385, 430, 475].map((x) =>
+                  [55, 85, 115, 145, 175, 205].map((y) => (
+                    <circle cx={x} cy={y} r="8" fill="#1e293b" stroke="#334155" stroke-width="1" opacity="0.8" />
+                  ))
+                )
+              }
               <!-- Active notes with labels (quiz state) -->
-              <circle cx="340" cy="55" r="11" fill="#10b981" /> <!-- correct A# on E string -->
+              <circle cx="340" cy="55" r="11" fill="#10b981"></circle>
+              <!-- correct A# on E string -->
               <text x="340" y="59" fill="white" font-size="8" font-weight="bold" text-anchor="middle">A#</text>
-              <circle cx="250" cy="175" r="11" fill="#f43f5e" /> <!-- incorrect C on A string -->
+              <circle cx="250" cy="175" r="11" fill="#f43f5e"></circle>
+              <!-- incorrect C on A string -->
               <text x="250" y="179" fill="white" font-size="8" font-weight="bold" text-anchor="middle">C</text>
-              <circle cx="430" cy="85" r="11" fill="#10b981" /> <!-- correct A# on B string -->
+              <circle cx="430" cy="85" r="11" fill="#10b981"></circle>
+              <!-- correct A# on B string -->
               <text x="430" y="89" fill="white" font-size="8" font-weight="bold" text-anchor="middle">A#</text>
-              <circle cx="205" cy="115" r="11" fill="#10b981" class="motion-safe:animate-pulse" />
+              <circle cx="205" cy="115" r="11" fill="#10b981" class="motion-safe:animate-pulse"></circle>
               <text x="205" y="119" fill="white" font-size="8" font-weight="bold" text-anchor="middle">A#</text>
               <!-- Legend at bottom -->
-              <text x="260" y="232" fill="#64748b" font-size="8" text-anchor="middle">High E (1st) at top · Low E (6th) at bottom · Like TAB</text>
+              <text x="260" y="232" fill="#64748b" font-size="8" text-anchor="middle"
+                >High E (1st) at top · Low E (6th) at bottom · Like TAB</text
+              >
             </svg>
             <div class="mt-4 flex items-center justify-between text-xs text-slate-300">
               <span>6 strings · 12+ frets · Standard tuning</span>
@@ -126,34 +139,38 @@ if (user) {
 
     <section class="mx-auto max-w-6xl px-6 py-16">
       <div class="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
-        {[
-          {
-            title: "4 Quiz Modes",
-            description: "Find notes, name notes, mark chords, and spot intervals with instant feedback.",
-          },
-          {
-            title: "Explorer Mode",
-            description: "Overlay scales and chords while hearing every note as you play.",
-          },
-          {
-            title: "Progress Tracking",
-            description: "Track note mastery, quiz stats, and practice history in one place.",
-          },
-          {
-            title: "AI Hints",
-            description: "Get quick tips and memorization tricks when you feel stuck.",
-          },
-        ].map((feature) => (
-          <div class="rounded-2xl border border-white/10 bg-white/5 p-6 shadow-lg shadow-slate-900/40">
-            <h2 class="text-lg font-semibold text-white">{feature.title}</h2>
-            <p class="mt-2 text-sm text-slate-300">{feature.description}</p>
-          </div>
-        ))}
+        {
+          [
+            {
+              title: "4 Quiz Modes",
+              description: "Find notes, name notes, mark chords, and spot intervals with instant feedback.",
+            },
+            {
+              title: "Explorer Mode",
+              description: "Overlay scales and chords while hearing every note as you play.",
+            },
+            {
+              title: "Progress Tracking",
+              description: "Track note mastery, quiz stats, and practice history in one place.",
+            },
+            {
+              title: "AI Hints",
+              description: "Get quick tips and memorization tricks when you feel stuck.",
+            },
+          ].map((feature) => (
+            <div class="rounded-2xl border border-white/10 bg-white/5 p-6 shadow-lg shadow-slate-900/40">
+              <h2 class="text-lg font-semibold text-white">{feature.title}</h2>
+              <p class="mt-2 text-sm text-slate-300">{feature.description}</p>
+            </div>
+          ))
+        }
       </div>
     </section>
 
     <section class="border-t border-white/5 bg-slate-950/60">
-      <div class="mx-auto flex max-w-6xl flex-col items-center justify-between gap-4 px-6 py-8 text-sm text-slate-400 md:flex-row">
+      <div
+        class="mx-auto flex max-w-6xl flex-col items-center justify-between gap-4 px-6 py-8 text-sm text-slate-400 md:flex-row"
+      >
         <span>Built for guitarists learning the fretboard, one session at a time.</span>
         <span>© 2026 FretNinja</span>
       </div>

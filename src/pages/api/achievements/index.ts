@@ -1,5 +1,5 @@
-import type { APIRoute } from 'astro';
-import { AchievementService } from '../../../lib/services/achievement.service';
+import type { APIRoute } from "astro";
+import { AchievementService } from "../../../lib/services/achievement.service";
 
 export const prerender = false;
 
@@ -11,12 +11,12 @@ export const GET: APIRoute = async ({ locals }) => {
   if (result.error) {
     return new Response(JSON.stringify(result.error.body), {
       status: result.error.status,
-      headers: { 'Content-Type': 'application/json' },
+      headers: { "Content-Type": "application/json" },
     });
   }
 
   return new Response(JSON.stringify(result.data), {
     status: 200,
-    headers: { 'Content-Type': 'application/json' },
+    headers: { "Content-Type": "application/json" },
   });
 };

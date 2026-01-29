@@ -87,8 +87,11 @@ test.describe("Achievements", () => {
       await expect(page.locator("div.grid.gap-6")).toBeVisible();
 
       // The page should show some achievements or loading/empty state
-      const hasAchievements = await achievementsPage.achievementCards.count() > 0;
-      const hasLoadingOrEmpty = await page.getByText(/loading|sign in/i).isVisible().catch(() => false);
+      const hasAchievements = (await achievementsPage.achievementCards.count()) > 0;
+      const hasLoadingOrEmpty = await page
+        .getByText(/loading|sign in/i)
+        .isVisible()
+        .catch(() => false);
 
       expect(hasAchievements || hasLoadingOrEmpty).toBe(true);
     });
@@ -171,9 +174,19 @@ test.describe("Achievements", () => {
       const isOnLogin = url.includes("/login");
 
       // Page should load without errors - check for header, grid, or redirect to login (auth issue)
-      const hasHeader = await page.getByRole("heading", { name: /milestones/i }).isVisible().catch(() => false);
-      const hasGrid = await page.locator("div.grid.gap-6").isVisible().catch(() => false);
-      const hasAchievementContent = await page.getByText(/achievement/i).first().isVisible().catch(() => false);
+      const hasHeader = await page
+        .getByRole("heading", { name: /milestones/i })
+        .isVisible()
+        .catch(() => false);
+      const hasGrid = await page
+        .locator("div.grid.gap-6")
+        .isVisible()
+        .catch(() => false);
+      const hasAchievementContent = await page
+        .getByText(/achievement/i)
+        .first()
+        .isVisible()
+        .catch(() => false);
 
       // Either shows achievements content OR we were redirected to login (session expired)
       expect(hasHeader || hasGrid || hasAchievementContent || isOnLogin || isOnAchievements).toBe(true);
@@ -225,8 +238,11 @@ test.describe("Achievements", () => {
       await expect(grid).toBeVisible();
 
       // The page should show achievements or a message
-      const hasCards = await achievementsPage.achievementCards.count() > 0;
-      const hasMessage = await page.getByText(/loading|no achievements/i).isVisible().catch(() => false);
+      const hasCards = (await achievementsPage.achievementCards.count()) > 0;
+      const hasMessage = await page
+        .getByText(/loading|no achievements/i)
+        .isVisible()
+        .catch(() => false);
 
       expect(hasCards || hasMessage).toBe(true);
     });

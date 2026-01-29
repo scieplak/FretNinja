@@ -1,12 +1,12 @@
-import type { SupabaseClient } from '@supabase/supabase-js';
-import type { Database, Json } from '../../db/database.types';
+import type { SupabaseClient } from "@supabase/supabase-js";
+import type { Database, Json } from "../../db/database.types";
 import type {
   CreateQuizAnswerCommand,
   CreateQuizAnswerResponseDTO,
   QuizAnswersListDTO,
   QuizAnswerDTO,
   ApiErrorDTO,
-} from '../../types';
+} from "../../types";
 
 type SupabaseClientType = SupabaseClient<Database>;
 
@@ -27,52 +27,55 @@ export class QuizAnswerService {
     const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
     if (!uuidRegex.test(sessionId)) {
       return {
-        error: { status: 404, body: { code: 'NOT_FOUND', message: 'Quiz session not found' } },
+        error: { status: 404, body: { code: "NOT_FOUND", message: "Quiz session not found" } },
       };
     }
 
     // Verify session exists and user owns it
     const { data: session, error: sessionError } = await this.supabase
-      .from('quiz_sessions')
-      .select('id, user_id, status')
-      .eq('id', sessionId)
+      .from("quiz_sessions")
+      .select("id, user_id, status")
+      .eq("id", sessionId)
       .single();
 
     if (sessionError || !session) {
       return {
-        error: { status: 404, body: { code: 'NOT_FOUND', message: 'Quiz session not found' } },
+        error: { status: 404, body: { code: "NOT_FOUND", message: "Quiz session not found" } },
       };
     }
 
     if (session.user_id !== userId) {
       return {
-        error: { status: 403, body: { code: 'FORBIDDEN', message: 'You cannot add answers to this session' } },
+        error: { status: 403, body: { code: "FORBIDDEN", message: "You cannot add answers to this session" } },
       };
     }
 
-    if (session.status !== 'in_progress') {
+    if (session.status !== "in_progress") {
       return {
-        error: { status: 409, body: { code: 'SESSION_NOT_ACTIVE', message: 'Quiz session is not in progress' } },
+        error: { status: 409, body: { code: "SESSION_NOT_ACTIVE", message: "Quiz session is not in progress" } },
       };
     }
 
     // Check for duplicate answer
     const { data: existingAnswer } = await this.supabase
-      .from('quiz_answers')
-      .select('id')
-      .eq('session_id', sessionId)
-      .eq('question_number', command.question_number)
+      .from("quiz_answers")
+      .select("id")
+      .eq("session_id", sessionId)
+      .eq("question_number", command.question_number)
       .maybeSingle();
 
     if (existingAnswer) {
       return {
-        error: { status: 400, body: { code: 'VALIDATION_ERROR', message: 'Answer for this question already submitted' } },
+        error: {
+          status: 400,
+          body: { code: "VALIDATION_ERROR", message: "Answer for this question already submitted" },
+        },
       };
     }
 
     // Insert answer
     const { data, error } = await this.supabase
-      .from('quiz_answers')
+      .from("quiz_answers")
       .insert({
         session_id: sessionId,
         question_number: command.question_number,
@@ -90,13 +93,13 @@ export class QuizAnswerService {
         reference_string_number: command.reference_string_number ?? null,
         user_answer_interval: command.user_answer_interval ?? null,
       })
-      .select('id, session_id, question_number, is_correct, created_at')
+      .select("id, session_id, question_number, is_correct, created_at")
       .single();
 
     if (error || !data) {
-      console.error('Failed to create answer:', error?.message);
+      console.error("Failed to create answer:", error?.message);
       return {
-        error: { status: 500, body: { code: 'SERVER_ERROR', message: 'Failed to submit answer' } },
+        error: { status: 500, body: { code: "SERVER_ERROR", message: "Failed to submit answer" } },
       };
     }
 
@@ -108,32 +111,32 @@ export class QuizAnswerService {
     const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
     if (!uuidRegex.test(sessionId)) {
       return {
-        error: { status: 404, body: { code: 'NOT_FOUND', message: 'Quiz session not found' } },
+        error: { status: 404, body: { code: "NOT_FOUND", message: "Quiz session not found" } },
       };
     }
 
     // Verify session exists and user owns it
     const { data: session, error: sessionError } = await this.supabase
-      .from('quiz_sessions')
-      .select('id, user_id')
-      .eq('id', sessionId)
+      .from("quiz_sessions")
+      .select("id, user_id")
+      .eq("id", sessionId)
       .single();
 
     if (sessionError || !session) {
       return {
-        error: { status: 404, body: { code: 'NOT_FOUND', message: 'Quiz session not found' } },
+        error: { status: 404, body: { code: "NOT_FOUND", message: "Quiz session not found" } },
       };
     }
 
     if (session.user_id !== userId) {
       return {
-        error: { status: 403, body: { code: 'FORBIDDEN', message: 'You cannot access this session' } },
+        error: { status: 403, body: { code: "FORBIDDEN", message: "You cannot access this session" } },
       };
     }
 
     // Fetch all answers
     const { data: answers, error: answersError } = await this.supabase
-      .from('quiz_answers')
+      .from("quiz_answers")
       .select(
         `
         id,
@@ -155,13 +158,13 @@ export class QuizAnswerService {
         created_at
       `
       )
-      .eq('session_id', sessionId)
-      .order('question_number', { ascending: true });
+      .eq("session_id", sessionId)
+      .order("question_number", { ascending: true });
 
     if (answersError) {
-      console.error('Failed to fetch answers:', answersError.message);
+      console.error("Failed to fetch answers:", answersError.message);
       return {
-        error: { status: 500, body: { code: 'SERVER_ERROR', message: 'Failed to fetch answers' } },
+        error: { status: 500, body: { code: "SERVER_ERROR", message: "Failed to fetch answers" } },
       };
     }
 

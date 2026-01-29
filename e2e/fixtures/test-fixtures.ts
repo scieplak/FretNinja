@@ -10,11 +10,7 @@ import { DashboardPage } from "../pages/DashboardPage";
 import { ExplorerPage } from "../pages/ExplorerPage";
 import { ProgressPage } from "../pages/ProgressPage";
 import { AchievementsPage } from "../pages/AchievementsPage";
-import {
-  cleanupUserQuizSessions,
-  cleanupAllUserTestData,
-  getTestUserId,
-} from "../helpers/supabase-cleanup";
+import { cleanupUserQuizSessions, cleanupAllUserTestData, getTestUserId } from "../helpers/supabase-cleanup";
 
 /**
  * Test credentials from environment variables
@@ -29,7 +25,7 @@ export const TEST_USER = {
  * Extended test fixtures with Page Objects
  * Usage: import { test, expect, TEST_USER } from './fixtures/test-fixtures';
  */
-type Fixtures = {
+interface Fixtures {
   homePage: HomePage;
   loginPage: LoginPage;
   registerPage: RegisterPage;
@@ -41,7 +37,7 @@ type Fixtures = {
   explorerPage: ExplorerPage;
   progressPage: ProgressPage;
   achievementsPage: AchievementsPage;
-};
+}
 
 export const test = base.extend<Fixtures>({
   homePage: async ({ page }, use) => {

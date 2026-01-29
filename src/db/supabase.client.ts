@@ -1,8 +1,8 @@
-import type { AstroCookies } from 'astro';
-import { createClient } from '@supabase/supabase-js';
-import { createServerClient, type CookieOptionsWithName } from '@supabase/ssr';
+import type { AstroCookies } from "astro";
+import { createClient } from "@supabase/supabase-js";
+import { createServerClient, type CookieOptionsWithName } from "@supabase/ssr";
 
-import type { Database } from './database.types';
+import type { Database } from "./database.types";
 
 // Legacy client for backwards compatibility (use sparingly)
 const supabaseUrl = import.meta.env.SUPABASE_URL;
@@ -12,10 +12,10 @@ export const supabaseClient = createClient<Database>(supabaseUrl, supabaseAnonKe
 
 // Cookie configuration for secure session management
 export const cookieOptions: CookieOptionsWithName = {
-  path: '/',
+  path: "/",
   secure: import.meta.env.PROD,
   httpOnly: true,
-  sameSite: 'lax',
+  sameSite: "lax",
   maxAge: 60 * 60 * 24 * 7, // 7 days
 };
 
@@ -25,9 +25,9 @@ export const cookieOptions: CookieOptionsWithName = {
 function parseCookieHeader(cookieHeader: string): { name: string; value: string }[] {
   if (!cookieHeader) return [];
 
-  return cookieHeader.split(';').map((cookie) => {
-    const [name, ...rest] = cookie.trim().split('=');
-    return { name: name || '', value: rest.join('=') };
+  return cookieHeader.split(";").map((cookie) => {
+    const [name, ...rest] = cookie.trim().split("=");
+    return { name: name || "", value: rest.join("=") };
   });
 }
 
@@ -40,16 +40,16 @@ export function createSupabaseServerInstance(context: { headers: Headers; cookie
     cookieOptions,
     cookies: {
       getAll() {
-        return parseCookieHeader(context.headers.get('Cookie') ?? '');
+        return parseCookieHeader(context.headers.get("Cookie") ?? "");
       },
       setAll(cookiesToSet) {
         cookiesToSet.forEach(({ name, value, options }) => {
           context.cookies.set(name, value, {
             ...options,
-            path: options?.path ?? '/',
+            path: options?.path ?? "/",
             secure: options?.secure ?? import.meta.env.PROD,
             httpOnly: options?.httpOnly ?? true,
-            sameSite: (options?.sameSite as 'lax' | 'strict' | 'none') ?? 'lax',
+            sameSite: (options?.sameSite as "lax" | "strict" | "none") ?? "lax",
           });
         });
       },

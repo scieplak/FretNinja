@@ -48,11 +48,7 @@ test.describe("Authenticated Quiz Flow", () => {
     });
 
     // Session persistence across reload may not be implemented - verify quiz starts fresh
-    test("should handle page reload during quiz", async ({
-      quizHubPage,
-      quizActivePage,
-      page,
-    }) => {
+    test("should handle page reload during quiz", async ({ quizHubPage, quizActivePage, page }) => {
       await quizHubPage.goto();
       await quizHubPage.selectAndStartQuiz("find_note", "easy");
 
@@ -261,11 +257,7 @@ test.describe("Authenticated Quiz Flow", () => {
   });
 
   test.describe("Quiz Abandonment", () => {
-    test("should allow abandoning quiz and return to hub", async ({
-      quizHubPage,
-      quizActivePage,
-      page,
-    }) => {
+    test("should allow abandoning quiz and return to hub", async ({ quizHubPage, quizActivePage, page }) => {
       await quizHubPage.goto();
       await quizHubPage.selectAndStartQuiz("find_note", "easy");
 

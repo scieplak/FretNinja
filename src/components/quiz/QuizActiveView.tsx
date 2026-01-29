@@ -14,7 +14,7 @@ import Fretboard, { type FretPosition, getFretboardPositions } from "@/component
 type QuizMode = "find-note" | "name-note" | "mark-chord" | "recognize-interval";
 type Difficulty = "easy" | "medium" | "hard";
 
-type Question = {
+interface Question {
   prompt: string;
   targetNote?: NoteEnum;
   targetInterval?: IntervalEnum;
@@ -24,7 +24,7 @@ type Question = {
   referencePosition?: FretPosition;
   options?: string[];
   correctPositions?: FretPosition[];
-};
+}
 
 // All intervals with their semitone distances
 const INTERVAL_SEMITONES: Record<IntervalEnum, number> = {
@@ -57,9 +57,39 @@ const getIntervalBetweenNotes = (note1: NoteEnum, note2: NoteEnum): IntervalEnum
 };
 
 // Intervals for each difficulty level
-const EASY_INTERVALS: IntervalEnum[] = ["minor_2nd", "major_2nd", "minor_3rd", "major_3rd", "perfect_4th", "perfect_5th"];
-const MEDIUM_INTERVALS: IntervalEnum[] = ["minor_2nd", "major_2nd", "minor_3rd", "major_3rd", "perfect_4th", "tritone", "perfect_5th", "minor_6th", "major_6th"];
-const ALL_INTERVALS: IntervalEnum[] = ["minor_2nd", "major_2nd", "minor_3rd", "major_3rd", "perfect_4th", "tritone", "perfect_5th", "minor_6th", "major_6th", "minor_7th", "major_7th", "octave"];
+const EASY_INTERVALS: IntervalEnum[] = [
+  "minor_2nd",
+  "major_2nd",
+  "minor_3rd",
+  "major_3rd",
+  "perfect_4th",
+  "perfect_5th",
+];
+const MEDIUM_INTERVALS: IntervalEnum[] = [
+  "minor_2nd",
+  "major_2nd",
+  "minor_3rd",
+  "major_3rd",
+  "perfect_4th",
+  "tritone",
+  "perfect_5th",
+  "minor_6th",
+  "major_6th",
+];
+const ALL_INTERVALS: IntervalEnum[] = [
+  "minor_2nd",
+  "major_2nd",
+  "minor_3rd",
+  "major_3rd",
+  "perfect_4th",
+  "tritone",
+  "perfect_5th",
+  "minor_6th",
+  "major_6th",
+  "minor_7th",
+  "major_7th",
+  "octave",
+];
 
 const getIntervalsForDifficulty = (difficulty: Difficulty): IntervalEnum[] => {
   if (difficulty === "easy") return EASY_INTERVALS;
@@ -417,7 +447,8 @@ const QuizActiveView = ({ mode, user }: QuizActiveViewProps) => {
 
   const submitOptionAnswer = useCallback(() => {
     if (!selectedOption || status !== "question") return;
-    const isCorrect = selectedOption === currentQuestion.targetNote || selectedOption === currentQuestion.targetInterval;
+    const isCorrect =
+      selectedOption === currentQuestion.targetNote || selectedOption === currentQuestion.targetInterval;
 
     // Show feedback on the fretboard for name-note mode
     if (mode === "name-note") {
@@ -610,9 +641,7 @@ const QuizActiveView = ({ mode, user }: QuizActiveViewProps) => {
       }
     ) => {
       const totalCorrect = answerLog.filter((answer) => answer.isCorrect).length + Number(lastAnswer.isCorrect);
-      const timeTakenSeconds = sessionStartRef.current
-        ? Math.round((Date.now() - sessionStartRef.current) / 1000)
-        : 0;
+      const timeTakenSeconds = sessionStartRef.current ? Math.round((Date.now() - sessionStartRef.current) / 1000) : 0;
       let achievements: { id: string; display_name: string }[] = [];
 
       if (sessionId && !isGuest) {
@@ -668,10 +697,20 @@ const QuizActiveView = ({ mode, user }: QuizActiveViewProps) => {
           >
             ← Back to quiz hub
           </a>
-          <p className="text-xs font-semibold uppercase tracking-[0.3em] text-emerald-300" data-testid="quiz-mode-label">{MODE_LABELS[mode]}</p>
-          <h1 className="text-2xl font-semibold text-white" data-testid="quiz-question-prompt">{currentQuestion.prompt}</h1>
+          <p
+            className="text-xs font-semibold uppercase tracking-[0.3em] text-emerald-300"
+            data-testid="quiz-mode-label"
+          >
+            {MODE_LABELS[mode]}
+          </p>
+          <h1 className="text-2xl font-semibold text-white" data-testid="quiz-question-prompt">
+            {currentQuestion.prompt}
+          </h1>
         </div>
-        <div className="rounded-full border border-white/10 bg-white/5 px-4 py-2 text-sm text-slate-200" data-testid="quiz-question-counter">
+        <div
+          className="rounded-full border border-white/10 bg-white/5 px-4 py-2 text-sm text-slate-200"
+          data-testid="quiz-question-counter"
+        >
           Question {questionIndex + 1} of {questions.length}
         </div>
       </header>
@@ -686,7 +725,9 @@ const QuizActiveView = ({ mode, user }: QuizActiveViewProps) => {
           data-testid="quiz-timer"
         >
           <span>Timer</span>
-          <span className={`font-semibold ${timeRemaining <= 5 ? "text-red-400" : ""}`} data-testid="quiz-timer-value">{timeRemaining}s left</span>
+          <span className={`font-semibold ${timeRemaining <= 5 ? "text-red-400" : ""}`} data-testid="quiz-timer-value">
+            {timeRemaining}s left
+          </span>
         </div>
       ) : null}
 
@@ -719,13 +760,14 @@ const QuizActiveView = ({ mode, user }: QuizActiveViewProps) => {
       </section>
 
       {mode === "name-note" || mode === "recognize-interval" ? (
-        <section className="rounded-2xl border border-white/10 bg-white/5 p-6" data-testid="quiz-answer-options-section">
+        <section
+          className="rounded-2xl border border-white/10 bg-white/5 p-6"
+          data-testid="quiz-answer-options-section"
+        >
           <h2 className="text-sm font-semibold text-white">Choose your answer</h2>
           <div
             className={`mt-4 grid gap-2 ${
-              mode === "recognize-interval"
-                ? "grid-cols-2 sm:grid-cols-3 lg:grid-cols-4"
-                : "grid-cols-2 lg:grid-cols-4"
+              mode === "recognize-interval" ? "grid-cols-2 sm:grid-cols-3 lg:grid-cols-4" : "grid-cols-2 lg:grid-cols-4"
             }`}
             data-testid="quiz-answer-options"
           >

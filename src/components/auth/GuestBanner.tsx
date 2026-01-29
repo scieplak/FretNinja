@@ -39,9 +39,7 @@ const GuestBanner = ({ variant = "default", onDismiss }: GuestBannerProps) => {
           </svg>
         </div>
         <h3 className="text-lg font-semibold text-white">Great practice session!</h3>
-        <p className="mt-2 text-sm text-slate-300">
-          Want to save your progress and track your improvement over time?
-        </p>
+        <p className="mt-2 text-sm text-slate-300">Want to save your progress and track your improvement over time?</p>
         <div className="mt-4 flex flex-col gap-2 sm:flex-row sm:justify-center">
           <a
             href="/register"
@@ -96,11 +94,7 @@ const GuestBanner = ({ variant = "default", onDismiss }: GuestBannerProps) => {
   }
 
   return (
-    <div
-      className="rounded-lg border border-amber-500/30 bg-amber-900/20 px-4 py-3"
-      role="status"
-      aria-live="polite"
-    >
+    <div className="rounded-lg border border-amber-500/30 bg-amber-900/20 px-4 py-3" role="status" aria-live="polite">
       <div className="flex items-start gap-3">
         <div className="shrink-0 rounded-full bg-amber-500/20 p-1.5">
           <svg
@@ -121,8 +115,7 @@ const GuestBanner = ({ variant = "default", onDismiss }: GuestBannerProps) => {
         </div>
         <div className="flex-1">
           <p className="text-sm text-amber-200">
-            <span className="font-semibold">You're playing as a guest.</span> Your progress won't be
-            saved.{" "}
+            <span className="font-semibold">You're playing as a guest.</span> Your progress won't be saved.{" "}
             <a href="/register" className="underline hover:text-amber-100">
               Create an account
             </a>{" "}

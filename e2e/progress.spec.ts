@@ -174,10 +174,7 @@ test.describe("Progress Page", () => {
   });
 
   test.describe("Data Accuracy", () => {
-    test("should show consistent total quizzes with dashboard", async ({
-      progressPage,
-      dashboardPage,
-    }) => {
+    test("should show consistent total quizzes with dashboard", async ({ progressPage, dashboardPage }) => {
       // Get dashboard count
       await dashboardPage.goto();
       const dashboardCount = await dashboardPage.getTotalQuizzes();

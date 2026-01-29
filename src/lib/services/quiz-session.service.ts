@@ -1,5 +1,5 @@
-import type { SupabaseClient } from '@supabase/supabase-js';
-import type { Database } from '../../db/database.types';
+import type { SupabaseClient } from "@supabase/supabase-js";
+import type { Database } from "../../db/database.types";
 import type {
   CreateQuizSessionCommand,
   QuizSessionDTO,
@@ -10,8 +10,8 @@ import type {
   AchievementEarnedDTO,
   ProfileEntity,
   ApiErrorDTO,
-} from '../../types';
-import { AchievementService } from './achievement.service';
+} from "../../types";
+import { AchievementService } from "./achievement.service";
 
 type SupabaseClientType = SupabaseClient<Database>;
 
@@ -26,41 +26,41 @@ export class QuizSessionService {
   async createSession(userId: string, command: CreateQuizSessionCommand): Promise<ServiceResult<QuizSessionDTO>> {
     // Check for existing active session
     const { data: activeSession } = await this.supabase
-      .from('quiz_sessions')
-      .select('id')
-      .eq('user_id', userId)
-      .eq('status', 'in_progress')
+      .from("quiz_sessions")
+      .select("id")
+      .eq("user_id", userId)
+      .eq("status", "in_progress")
       .maybeSingle();
 
     if (activeSession) {
       return {
         error: {
           status: 409,
-          body: { code: 'SESSION_IN_PROGRESS', message: 'You have an unfinished quiz session' },
+          body: { code: "SESSION_IN_PROGRESS", message: "You have an unfinished quiz session" },
         },
       };
     }
 
     // Create new session
     const { data, error } = await this.supabase
-      .from('quiz_sessions')
+      .from("quiz_sessions")
       .insert({
         user_id: userId,
         quiz_type: command.quiz_type,
         difficulty: command.difficulty,
-        time_limit_seconds: command.difficulty === 'hard' ? command.time_limit_seconds : null,
-        status: 'in_progress',
+        time_limit_seconds: command.difficulty === "hard" ? command.time_limit_seconds : null,
+        status: "in_progress",
         started_at: new Date().toISOString(),
       })
-      .select('id, user_id, quiz_type, difficulty, status, time_limit_seconds, started_at, created_at')
+      .select("id, user_id, quiz_type, difficulty, status, time_limit_seconds, started_at, created_at")
       .single();
 
     if (error) {
-      console.error('Failed to create quiz session:', error.message);
+      console.error("Failed to create quiz session:", error.message);
       return {
         error: {
           status: 500,
-          body: { code: 'SERVER_ERROR', message: 'Failed to create quiz session' },
+          body: { code: "SERVER_ERROR", message: "Failed to create quiz session" },
         },
       };
     }
@@ -80,27 +80,27 @@ export class QuizSessionService {
     }
   ): Promise<ServiceResult<QuizSessionListDTO>> {
     // Parse sort parameter (default: completed_at:desc)
-    const sortParam = query.sort ?? 'completed_at:desc';
-    const [sortField, sortDirection] = sortParam.split(':');
-    const ascending = sortDirection === 'asc';
+    const sortParam = query.sort ?? "completed_at:desc";
+    const [sortField, sortDirection] = sortParam.split(":");
+    const ascending = sortDirection === "asc";
 
     // Build base query
     let baseQuery = this.supabase
-      .from('quiz_sessions')
-      .select('id, quiz_type, difficulty, score, status, time_taken_seconds, started_at, completed_at', {
-        count: 'exact',
+      .from("quiz_sessions")
+      .select("id, quiz_type, difficulty, score, status, time_taken_seconds, started_at, completed_at", {
+        count: "exact",
       })
-      .eq('user_id', userId);
+      .eq("user_id", userId);
 
     // Apply filters
     if (query.quiz_type) {
-      baseQuery = baseQuery.eq('quiz_type', query.quiz_type as Database['public']['Enums']['quiz_type_enum']);
+      baseQuery = baseQuery.eq("quiz_type", query.quiz_type as Database["public"]["Enums"]["quiz_type_enum"]);
     }
     if (query.difficulty) {
-      baseQuery = baseQuery.eq('difficulty', query.difficulty as Database['public']['Enums']['difficulty_enum']);
+      baseQuery = baseQuery.eq("difficulty", query.difficulty as Database["public"]["Enums"]["difficulty_enum"]);
     }
     if (query.status) {
-      baseQuery = baseQuery.eq('status', query.status as Database['public']['Enums']['session_status_enum']);
+      baseQuery = baseQuery.eq("status", query.status as Database["public"]["Enums"]["session_status_enum"]);
     }
 
     // Apply sorting and pagination
@@ -111,11 +111,11 @@ export class QuizSessionService {
       .range(offset, offset + query.limit - 1);
 
     if (error) {
-      console.error('Failed to fetch quiz sessions:', error.message);
+      console.error("Failed to fetch quiz sessions:", error.message);
       return {
         error: {
           status: 500,
-          body: { code: 'SERVER_ERROR', message: 'Failed to fetch quiz sessions' },
+          body: { code: "SERVER_ERROR", message: "Failed to fetch quiz sessions" },
         },
       };
     }
@@ -143,14 +143,14 @@ export class QuizSessionService {
       return {
         error: {
           status: 404,
-          body: { code: 'NOT_FOUND', message: 'Quiz session not found' },
+          body: { code: "NOT_FOUND", message: "Quiz session not found" },
         },
       };
     }
 
     // Fetch session
     const { data: session, error: sessionError } = await this.supabase
-      .from('quiz_sessions')
+      .from("quiz_sessions")
       .select(
         `
         id,
@@ -165,14 +165,14 @@ export class QuizSessionService {
         completed_at
       `
       )
-      .eq('id', sessionId)
+      .eq("id", sessionId)
       .single();
 
     if (sessionError || !session) {
       return {
         error: {
           status: 404,
-          body: { code: 'NOT_FOUND', message: 'Quiz session not found' },
+          body: { code: "NOT_FOUND", message: "Quiz session not found" },
         },
       };
     }
@@ -182,14 +182,14 @@ export class QuizSessionService {
       return {
         error: {
           status: 403,
-          body: { code: 'FORBIDDEN', message: 'You cannot access this session' },
+          body: { code: "FORBIDDEN", message: "You cannot access this session" },
         },
       };
     }
 
     // Fetch answers
     const { data: answers, error: answersError } = await this.supabase
-      .from('quiz_answers')
+      .from("quiz_answers")
       .select(
         `
         question_number,
@@ -208,15 +208,15 @@ export class QuizSessionService {
         user_answer_positions
       `
       )
-      .eq('session_id', sessionId)
-      .order('question_number', { ascending: true });
+      .eq("session_id", sessionId)
+      .order("question_number", { ascending: true });
 
     if (answersError) {
-      console.error('Failed to fetch answers:', answersError.message);
+      console.error("Failed to fetch answers:", answersError.message);
       return {
         error: {
           status: 500,
-          body: { code: 'SERVER_ERROR', message: 'Failed to fetch quiz session' },
+          body: { code: "SERVER_ERROR", message: "Failed to fetch quiz session" },
         },
       };
     }
@@ -232,74 +232,77 @@ export class QuizSessionService {
   async updateSession(
     userId: string,
     sessionId: string,
-    command: { status: 'completed' | 'abandoned'; time_taken_seconds?: number }
+    command: { status: "completed" | "abandoned"; time_taken_seconds?: number }
   ): Promise<ServiceResult<UpdateQuizSessionResponseDTO>> {
     // Validate UUID format
     const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
     if (!uuidRegex.test(sessionId)) {
       return {
-        error: { status: 404, body: { code: 'NOT_FOUND', message: 'Quiz session not found' } },
+        error: { status: 404, body: { code: "NOT_FOUND", message: "Quiz session not found" } },
       };
     }
 
     // Fetch session and verify ownership
     const { data: session, error: sessionError } = await this.supabase
-      .from('quiz_sessions')
-      .select('*')
-      .eq('id', sessionId)
+      .from("quiz_sessions")
+      .select("*")
+      .eq("id", sessionId)
       .single();
 
     if (sessionError || !session) {
       return {
-        error: { status: 404, body: { code: 'NOT_FOUND', message: 'Quiz session not found' } },
+        error: { status: 404, body: { code: "NOT_FOUND", message: "Quiz session not found" } },
       };
     }
 
     if (session.user_id !== userId) {
       return {
-        error: { status: 403, body: { code: 'FORBIDDEN', message: 'You cannot modify this session' } },
+        error: { status: 403, body: { code: "FORBIDDEN", message: "You cannot modify this session" } },
       };
     }
 
-    if (session.status !== 'in_progress') {
+    if (session.status !== "in_progress") {
       return {
-        error: { status: 409, body: { code: 'ALREADY_FINALIZED', message: 'Session is already completed or abandoned' } },
+        error: {
+          status: 409,
+          body: { code: "ALREADY_FINALIZED", message: "Session is already completed or abandoned" },
+        },
       };
     }
 
     let achievementsEarned: AchievementEarnedDTO[] = [];
     let score: number | null = null;
 
-    if (command.status === 'completed') {
+    if (command.status === "completed") {
       // Count answers
       const { count } = await this.supabase
-        .from('quiz_answers')
-        .select('*', { count: 'exact', head: true })
-        .eq('session_id', sessionId);
+        .from("quiz_answers")
+        .select("*", { count: "exact", head: true })
+        .eq("session_id", sessionId);
 
       if (count !== 10) {
         return {
           error: {
             status: 400,
-            body: { code: 'VALIDATION_ERROR', message: 'Cannot complete session without all 10 answers' },
+            body: { code: "VALIDATION_ERROR", message: "Cannot complete session without all 10 answers" },
           },
         };
       }
 
       // Calculate score
       const { data: correctAnswers } = await this.supabase
-        .from('quiz_answers')
-        .select('id')
-        .eq('session_id', sessionId)
-        .eq('is_correct', true);
+        .from("quiz_answers")
+        .select("id")
+        .eq("session_id", sessionId)
+        .eq("is_correct", true);
 
       score = correctAnswers?.length ?? 0;
 
       // Update profile (streak + quiz count)
-      const { data: profile } = await this.supabase.from('profiles').select('*').eq('id', userId).single();
+      const { data: profile } = await this.supabase.from("profiles").select("*").eq("id", userId).single();
 
       if (profile) {
-        const today = new Date().toISOString().split('T')[0];
+        const today = new Date().toISOString().split("T")[0];
         let newStreak = profile.current_streak;
         let newLongestStreak = profile.longest_streak;
 
@@ -333,32 +336,37 @@ export class QuizSessionService {
           [quizCountField]: currentCount + 1,
         };
 
-        await this.supabase.from('profiles').update(profileUpdate).eq('id', userId);
+        await this.supabase.from("profiles").update(profileUpdate).eq("id", userId);
 
         // Evaluate achievements
         const updatedProfile = { ...profile, ...profileUpdate } as ProfileEntity;
         const achievementService = new AchievementService(this.supabase);
-        achievementsEarned = await achievementService.evaluateAndGrant(userId, updatedProfile, session.quiz_type, score);
+        achievementsEarned = await achievementService.evaluateAndGrant(
+          userId,
+          updatedProfile,
+          session.quiz_type,
+          score
+        );
       }
     }
 
     // Update session
     const { data: updatedSession, error: updateError } = await this.supabase
-      .from('quiz_sessions')
+      .from("quiz_sessions")
       .update({
         status: command.status,
-        score: command.status === 'completed' ? score : null,
+        score: command.status === "completed" ? score : null,
         time_taken_seconds: command.time_taken_seconds ?? null,
         completed_at: new Date().toISOString(),
       })
-      .eq('id', sessionId)
-      .select('id, user_id, quiz_type, difficulty, score, status, time_taken_seconds, started_at, completed_at')
+      .eq("id", sessionId)
+      .select("id, user_id, quiz_type, difficulty, score, status, time_taken_seconds, started_at, completed_at")
       .single();
 
     if (updateError || !updatedSession) {
-      console.error('Failed to update quiz session:', updateError?.message);
+      console.error("Failed to update quiz session:", updateError?.message);
       return {
-        error: { status: 500, body: { code: 'SERVER_ERROR', message: 'Failed to update quiz session' } },
+        error: { status: 500, body: { code: "SERVER_ERROR", message: "Failed to update quiz session" } },
       };
     }
 

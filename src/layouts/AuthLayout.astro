@@ -12,10 +12,7 @@ const { title, subtitle, description, badge } = Astro.props;
 ---
 
 <Layout title={`${title} • FretNinja`}>
-  <main
-    id="main-content"
-    class="flex min-h-screen items-center justify-center bg-slate-950 px-6 py-16 text-white"
-  >
+  <main id="main-content" class="flex min-h-screen items-center justify-center bg-slate-950 px-6 py-16 text-white">
     <div class="w-full max-w-md">
       <a
         href="/"
@@ -33,24 +30,18 @@ const { title, subtitle, description, badge } = Astro.props;
           class="h-6 w-6"
           aria-hidden="true"
         >
-          <path d="M12 2L2 7l10 5 10-5-10-5z" />
-          <path d="M2 17l10 5 10-5" />
-          <path d="M2 12l10 5 10-5" />
+          <path d="M12 2L2 7l10 5 10-5-10-5z"></path>
+          <path d="M2 17l10 5 10-5"></path>
+          <path d="M2 12l10 5 10-5"></path>
         </svg>
         <span class="text-lg font-bold tracking-tight">FretNinja</span>
       </a>
 
       <div class="rounded-2xl border border-white/10 bg-white/5 p-8 shadow-2xl shadow-slate-900/50">
         <div class="space-y-2">
-          {badge && (
-            <p class="text-xs font-semibold uppercase tracking-[0.3em] text-emerald-300">
-              {badge}
-            </p>
-          )}
+          {badge && <p class="text-xs font-semibold uppercase tracking-[0.3em] text-emerald-300">{badge}</p>}
           <h1 class="text-2xl font-semibold text-white">{subtitle || title}</h1>
-          {description && (
-            <p class="text-sm text-slate-300">{description}</p>
-          )}
+          {description && <p class="text-sm text-slate-300">{description}</p>}
         </div>
 
         <div class="mt-8">
