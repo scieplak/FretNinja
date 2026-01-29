@@ -64,8 +64,7 @@ jobs:
       SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
       SUPABASE_KEY: ${{ secrets.SUPABASE_KEY }}
       TEST_USER_EMAIL: ${{ secrets.TEST_USER_EMAIL }}
-      TEST_USER_PASSWORD: ${{ secrets.TEST_USER_PASSWORD }}
-      OPENROUTER_API_KEY: ${{ secrets.OPENROUTER_API_KEY }}
+      TEST_USER_PASSWORD: ${{ secrets.E2E_PASSWORD }}
       BASE_URL: http://localhost:3000
     steps:
       - name: Checkout repository
@@ -89,8 +88,9 @@ jobs:
           echo "SUPABASE_URL=${{ secrets.SUPABASE_URL }}" >> .env.test
           echo "SUPABASE_KEY=${{ secrets.SUPABASE_KEY }}" >> .env.test
           echo "TEST_USER_EMAIL=${{ secrets.TEST_USER_EMAIL }}" >> .env.test
-          echo "TEST_USER_PASSWORD=${{ secrets.TEST_USER_PASSWORD }}" >> .env.test
-          echo "OPENROUTER_API_KEY=${{ secrets.OPENROUTER_API_KEY }}" >> .env.test
+          echo "TEST_USER_PASSWORD=${{ secrets.E2E_PASSWORD }}" >> .env.test
+          echo "E2E_USERNAME=${{ secrets.TEST_USER_EMAIL }}" >> .env.test
+          echo "E2E_PASSWORD=${{ secrets.E2E_PASSWORD }}" >> .env.test
 
       - name: Debug - Check .env.test (keys only)
         run: |
