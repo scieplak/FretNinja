@@ -65,9 +65,9 @@ export class ExplorerPage extends BasePage {
     this.hintDisplay = page.getByTestId("explorer-hint-result");
     this.hintError = page.getByTestId("explorer-hint-error");
 
-    // Highlighted notes on fretboard (amber/pulse styling)
+    // Highlighted notes on fretboard (emerald styling for scale/chord patterns)
     this.highlightedNotes = page.locator(
-      "[data-testid^='fretboard-position-'][class*='animate-pulse'], [data-testid^='fretboard-position-'][class*='amber']"
+      "[data-testid^='fretboard-position-'][class*='emerald']"
     );
   }
 

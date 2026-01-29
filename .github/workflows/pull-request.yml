@@ -92,13 +92,6 @@ jobs:
           echo "E2E_USERNAME=${{ secrets.TEST_USER_EMAIL }}" >> .env.test
           echo "E2E_PASSWORD=${{ secrets.E2E_PASSWORD }}" >> .env.test
 
-      - name: Debug - Check .env.test (keys only)
-        run: |
-          echo "Number of lines in .env.test:"
-          wc -l .env.test
-          echo "Keys in .env.test (values hidden):"
-          cut -d'=' -f1 .env.test
-
       - name: Run E2E tests
         run: npm run test:e2e
 

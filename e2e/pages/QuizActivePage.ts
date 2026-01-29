@@ -135,9 +135,9 @@ export class QuizActivePage extends BasePage {
   }
 
   async getHighlightedPositions(): Promise<{ fret: number; string: number }[]> {
-    // Look for buttons with amber/highlight styling (pulse animation)
+    // Look for buttons with emerald styling (highlighted notes in quiz)
     const highlighted = this.page.locator(
-      "[data-testid^='fretboard-position-'][class*='animate-pulse'], [data-testid^='fretboard-position-'][class*='amber']"
+      "[data-testid^='fretboard-position-'][class*='emerald']"
     );
     const count = await highlighted.count();
     const positions: { fret: number; string: number }[] = [];
