@@ -85,14 +85,19 @@ jobs:
 
       - name: Create .env.test file
         run: |
-          cat << EOF > .env.test
-          BASE_URL=${{ env.BASE_URL }}
-          SUPABASE_URL=${{ secrets.SUPABASE_URL }}
-          SUPABASE_KEY=${{ secrets.SUPABASE_KEY }}
-          TEST_USER_EMAIL=${{ secrets.TEST_USER_EMAIL }}
-          TEST_USER_PASSWORD=${{ secrets.TEST_USER_PASSWORD }}
-          OPENROUTER_API_KEY=${{ secrets.OPENROUTER_API_KEY }}
-          EOF
+          echo "BASE_URL=${{ env.BASE_URL }}" >> .env.test
+          echo "SUPABASE_URL=${{ secrets.SUPABASE_URL }}" >> .env.test
+          echo "SUPABASE_KEY=${{ secrets.SUPABASE_KEY }}" >> .env.test
+          echo "TEST_USER_EMAIL=${{ secrets.TEST_USER_EMAIL }}" >> .env.test
+          echo "TEST_USER_PASSWORD=${{ secrets.TEST_USER_PASSWORD }}" >> .env.test
+          echo "OPENROUTER_API_KEY=${{ secrets.OPENROUTER_API_KEY }}" >> .env.test
+
+      - name: Debug - Check .env.test (keys only)
+        run: |
+          echo "Number of lines in .env.test:"
+          wc -l .env.test
+          echo "Keys in .env.test (values hidden):"
+          cut -d'=' -f1 .env.test
 
       - name: Run E2E tests
         run: npm run test:e2e
