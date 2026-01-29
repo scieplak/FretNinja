@@ -1,7 +1,7 @@
 ---
 import AppLayout from "../layouts/AppLayout.astro";
 import DashboardView from "../components/dashboard/DashboardView";
-import type { ProfileDTO, StatsOverviewDTO, UserAchievementsDTO, QuizSessionListDTO } from "../types";
+import type { ProfileDTO, StatsOverviewDTO, UserAchievementsDTO, QuizSessionListDTO, NoteMasteryResponseDTO } from "../types";
 
 const user = Astro.locals.user;
 const supabase = Astro.locals.supabase;
@@ -11,6 +11,7 @@ let profile: ProfileDTO | null = null;
 let stats: StatsOverviewDTO | null = null;
 let achievements: UserAchievementsDTO | null = null;
 let sessions: QuizSessionListDTO | null = null;
+let noteMastery: NoteMasteryResponseDTO | null = null;
 
 if (user) {
   // Import services
@@ -19,18 +20,22 @@ if (user) {
   const { AchievementService } = await import("../lib/services/achievement.service");
   const { QuizSessionService } = await import("../lib/services/quiz-session.service");
 
+  const statsService = new StatsService(supabase);
+
   // Fetch all data in parallel
-  const [profileResult, statsResult, achievementsResult, sessionsResult] = await Promise.all([
+  const [profileResult, statsResult, achievementsResult, sessionsResult, noteMasteryResult] = await Promise.all([
     new ProfileService(supabase).getProfile(user.id),
-    new StatsService(supabase).getOverview(user.id),
+    statsService.getOverview(user.id),
     new AchievementService(supabase).getUserAchievements(user.id),
     new QuizSessionService(supabase).listSessions(user.id, { page: 1, limit: 5 }),
+    statsService.getNoteMastery(user.id),
   ]);
 
   profile = profileResult.data ?? null;
   stats = statsResult.data ?? null;
   achievements = achievementsResult.data ?? null;
   sessions = sessionsResult.data ?? null;
+  noteMastery = noteMasteryResult.data ?? null;
 }
 ---
 
@@ -44,6 +49,7 @@ if (user) {
         initialStats={stats}
         initialAchievements={achievements}
         initialSessions={sessions}
+        initialNoteMastery={noteMastery}
       />
     </div>
   </div>

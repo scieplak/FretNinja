@@ -5,6 +5,8 @@ import type {
   QuizSessionListDTO,
   StatsOverviewDTO,
   UserAchievementsDTO,
+  NoteMasteryResponseDTO,
+  NoteEnum,
 } from "@/types";
 
 interface DashboardViewProps {
@@ -13,7 +15,18 @@ interface DashboardViewProps {
   initialStats?: StatsOverviewDTO | null;
   initialAchievements?: UserAchievementsDTO | null;
   initialSessions?: QuizSessionListDTO | null;
+  initialNoteMastery?: NoteMasteryResponseDTO | null;
 }
+
+const NOTE_ORDER: NoteEnum[] = ["C", "C#", "D", "D#", "E", "F", "F#", "G", "G#", "A", "A#", "B"];
+
+const getAccuracyColor = (accuracy: number) => {
+  if (accuracy >= 80) return "bg-emerald-500";
+  if (accuracy >= 60) return "bg-emerald-400";
+  if (accuracy >= 40) return "bg-yellow-400";
+  if (accuracy >= 20) return "bg-orange-400";
+  return "bg-rose-500";
+};
 
 type DashboardData = {
   profile: ProfileDTO | null;
@@ -44,6 +57,7 @@ const DashboardView = ({
   initialStats,
   initialAchievements,
   initialSessions,
+  initialNoteMastery,
 }: DashboardViewProps) => {
   const isGuest = !user;
 
@@ -301,10 +315,41 @@ const DashboardView = ({
 
         <section className="rounded-2xl border border-white/10 bg-white/5 p-6" data-testid="dashboard-note-mastery">
           <h3 className="text-lg font-semibold text-white">Note mastery</h3>
-          <div className="mt-4 rounded-lg border border-white/10 bg-slate-950/40 px-4 py-6 text-sm text-slate-300">
-            <p>See which notes you know well and which need more practice.</p>
-            <a href="/progress" data-testid="dashboard-open-mastery" className="mt-3 inline-flex text-emerald-200 hover:text-emerald-100">
-              View note mastery →
+          <div className="mt-4">
+            {initialNoteMastery && initialNoteMastery.total_attempts > 0 ? (
+              <>
+                <div className="grid grid-cols-6 gap-2">
+                  {NOTE_ORDER.map((note) => {
+                    const item = initialNoteMastery.data.find((d) => d.note === note);
+                    const accuracy = item?.accuracy ?? 0;
+                    const hasData = (item?.total_attempts ?? 0) > 0;
+                    return (
+                      <div
+                        key={note}
+                        className="flex flex-col items-center rounded-lg border border-white/10 bg-slate-950/40 p-2"
+                        title={hasData ? `${accuracy}% accuracy` : "No data"}
+                      >
+                        <span className="text-xs font-semibold text-white">{note}</span>
+                        {hasData ? (
+                          <div className={`mt-1 h-1.5 w-full rounded-full ${getAccuracyColor(accuracy)}`} />
+                        ) : (
+                          <div className="mt-1 h-1.5 w-full rounded-full bg-slate-700" />
+                        )}
+                      </div>
+                    );
+                  })}
+                </div>
+                <p className="mt-3 text-xs text-slate-400">
+                  {initialNoteMastery.overall_accuracy}% overall · {initialNoteMastery.total_attempts} attempts
+                </p>
+              </>
+            ) : (
+              <p className="text-sm text-slate-300">
+                {data.isGuest ? "Sign in to track note mastery." : "Complete quizzes to see which notes need practice."}
+              </p>
+            )}
+            <a href="/progress" data-testid="dashboard-open-mastery" className="mt-3 inline-flex text-sm text-emerald-200 hover:text-emerald-100">
+              View full breakdown →
             </a>
           </div>
         </section>

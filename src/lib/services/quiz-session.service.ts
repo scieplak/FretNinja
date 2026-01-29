@@ -76,11 +76,12 @@ export class QuizSessionService {
       quiz_type?: string;
       difficulty?: string;
       status?: string;
-      sort: string;
+      sort?: string;
     }
   ): Promise<ServiceResult<QuizSessionListDTO>> {
-    // Parse sort parameter
-    const [sortField, sortDirection] = query.sort.split(':');
+    // Parse sort parameter (default: completed_at:desc)
+    const sortParam = query.sort ?? 'completed_at:desc';
+    const [sortField, sortDirection] = sortParam.split(':');
     const ascending = sortDirection === 'asc';
 
     // Build base query
