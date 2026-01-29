@@ -236,7 +236,7 @@ const SettingsView = ({ user }: SettingsViewProps) => {
           <p className="text-xs text-slate-400">
             Built for fretboard learning with dark-mode performance focus.
           </p>
-          <a href="https://github.com/10xDevs/FretNinja/issues" className="text-emerald-200 hover:text-emerald-100">
+          <a href="https://github.com/scieplak/FretNinja/issues" className="text-emerald-200 hover:text-emerald-100">
             Support & feedback
           </a>
         </div>
