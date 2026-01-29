@@ -23,6 +23,7 @@
     "@astrojs/node": "^9.4.3",
     "@astrojs/react": "^4.3.1",
     "@astrojs/sitemap": "^3.5.1",
+    "@astrojs/vercel": "^9.0.4",
     "@radix-ui/react-slot": "^1.1.2",
     "@supabase/ssr": "^0.8.0",
     "@supabase/supabase-js": "^2.91.1",
