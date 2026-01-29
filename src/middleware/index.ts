@@ -3,10 +3,10 @@ import { defineMiddleware } from 'astro:middleware';
 import { createSupabaseServerInstance } from '../db/supabase.client';
 
 // Routes that require authentication - hard redirect to login
-const PROTECTED_ROUTES = ['/dashboard', '/profile', '/achievements', '/statistics', '/progress', '/settings'];
+const PROTECTED_ROUTES = ['/profile', '/statistics', '/settings'];
 
 // Routes that work for both guests and authenticated users - soft check
-const MIXED_ROUTES = ['/quiz', '/explorer'];
+const MIXED_ROUTES = ['/quiz', '/explorer', '/dashboard', '/progress', '/achievements'];
 
 // Routes that should redirect authenticated users away (e.g., login/register)
 const AUTH_ROUTES = ['/login', '/register', '/reset-password', '/auth/password-update'];
