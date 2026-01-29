@@ -1,14 +1,50 @@
 ---
 import AppLayout from "../layouts/AppLayout.astro";
 import DashboardView from "../components/dashboard/DashboardView";
+import type { ProfileDTO, StatsOverviewDTO, UserAchievementsDTO, QuizSessionListDTO } from "../types";
 
 const user = Astro.locals.user;
+const supabase = Astro.locals.supabase;
+
+// Server-side data fetching for logged-in users
+let profile: ProfileDTO | null = null;
+let stats: StatsOverviewDTO | null = null;
+let achievements: UserAchievementsDTO | null = null;
+let sessions: QuizSessionListDTO | null = null;
+
+if (user) {
+  // Import services
+  const { ProfileService } = await import("../lib/services/profile.service");
+  const { StatsService } = await import("../lib/services/stats.service");
+  const { AchievementService } = await import("../lib/services/achievement.service");
+  const { QuizSessionService } = await import("../lib/services/quiz-session.service");
+
+  // Fetch all data in parallel
+  const [profileResult, statsResult, achievementsResult, sessionsResult] = await Promise.all([
+    new ProfileService(supabase).getProfile(user.id),
+    new StatsService(supabase).getOverview(user.id),
+    new AchievementService(supabase).getUserAchievements(user.id),
+    new QuizSessionService(supabase).listSessions(user.id, { page: 1, limit: 5 }),
+  ]);
+
+  profile = profileResult.data ?? null;
+  stats = statsResult.data ?? null;
+  achievements = achievementsResult.data ?? null;
+  sessions = sessionsResult.data ?? null;
+}
 ---
 
 <AppLayout title="Dashboard">
   <div class="px-6 py-12">
     <div class="mx-auto max-w-6xl">
-      <DashboardView client:visible user={user} />
+      <DashboardView
+        client:load
+        user={user}
+        initialProfile={profile}
+        initialStats={stats}
+        initialAchievements={achievements}
+        initialSessions={sessions}
+      />
     </div>
   </div>
 </AppLayout>

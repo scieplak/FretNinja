@@ -9,6 +9,10 @@ import type {
 
 interface DashboardViewProps {
   user: { id: string; email: string } | null;
+  initialProfile?: ProfileDTO | null;
+  initialStats?: StatsOverviewDTO | null;
+  initialAchievements?: UserAchievementsDTO | null;
+  initialSessions?: QuizSessionListDTO | null;
 }
 
 type DashboardData = {
@@ -34,30 +38,30 @@ const formatDate = (value?: string | null) => {
   return date.toLocaleDateString(undefined, { month: "short", day: "numeric" });
 };
 
-const DashboardView = ({ user }: DashboardViewProps) => {
+const DashboardView = ({
+  user,
+  initialProfile,
+  initialStats,
+  initialAchievements,
+  initialSessions,
+}: DashboardViewProps) => {
   const isGuest = !user;
 
+  // Use server-provided data as initial state (no loading flash)
   const [data, setData] = useState<DashboardData>({
-    profile: null,
-    stats: null,
-    achievements: null,
-    sessions: null,
+    profile: initialProfile ?? null,
+    stats: initialStats ?? null,
+    achievements: initialAchievements ?? null,
+    sessions: initialSessions ?? null,
     isGuest,
   });
-  const [isLoading, setIsLoading] = useState(!isGuest);
+  // Only show loading if we're logged in but have no initial data
+  const [isLoading, setIsLoading] = useState(!isGuest && !initialProfile);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
   useEffect(() => {
     // If guest, no data to load
     if (isGuest) {
-      setData({
-        profile: null,
-        stats: null,
-        achievements: null,
-        sessions: null,
-        isGuest: true,
-      });
-      setIsLoading(false);
       return;
     }
 
@@ -115,7 +119,10 @@ const DashboardView = ({ user }: DashboardViewProps) => {
       }
     };
 
-    load();
+    // Only fetch on mount if we don't have initial data
+    if (!initialProfile) {
+      load();
+    }
 
     // Refetch when page becomes visible (user returns from quiz)
     const handleVisibilityChange = () => {
@@ -130,7 +137,7 @@ const DashboardView = ({ user }: DashboardViewProps) => {
       active = false;
       document.removeEventListener("visibilitychange", handleVisibilityChange);
     };
-  }, [isGuest]);
+  }, [isGuest, initialProfile]);
 
   const displayName = useMemo(() => {
     if (data.profile?.display_name) {
@@ -292,12 +299,12 @@ const DashboardView = ({ user }: DashboardViewProps) => {
           </div>
         </section>
 
-        <section className="rounded-2xl border border-white/10 bg-white/5 p-6" data-testid="dashboard-problem-areas">
-          <h3 className="text-lg font-semibold text-white">Problem areas</h3>
+        <section className="rounded-2xl border border-white/10 bg-white/5 p-6" data-testid="dashboard-note-mastery">
+          <h3 className="text-lg font-semibold text-white">Note mastery</h3>
           <div className="mt-4 rounded-lg border border-white/10 bg-slate-950/40 px-4 py-6 text-sm text-slate-300">
-            <p>Heatmap preview will highlight your toughest fret positions.</p>
-            <a href="/progress" data-testid="dashboard-open-heatmap" className="mt-3 inline-flex text-emerald-200 hover:text-emerald-100">
-              Open full heatmap →
+            <p>See which notes you know well and which need more practice.</p>
+            <a href="/progress" data-testid="dashboard-open-mastery" className="mt-3 inline-flex text-emerald-200 hover:text-emerald-100">
+              View note mastery →
             </a>
           </div>
         </section>
