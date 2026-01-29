@@ -4,7 +4,13 @@ import ExplorerView from "../components/explorer/ExplorerView";
 ---
 
 <AppLayout title="Explorer">
-  <div class="px-6 py-12">
+  <div class="rotate-prompt bg-slate-950/95 text-white">
+    <div class="rounded-2xl border border-emerald-400/40 bg-emerald-400/10 px-6 py-4 text-center">
+      <p class="text-sm font-semibold text-emerald-100">Rotate your device</p>
+      <p class="mt-2 text-xs text-slate-200">Landscape orientation works best for the fretboard.</p>
+    </div>
+  </div>
+  <div class="px-3 py-6 sm:px-6 sm:py-12">
     <div class="mx-auto max-w-6xl">
       <ExplorerView client:load />
     </div>

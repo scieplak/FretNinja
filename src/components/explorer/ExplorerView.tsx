@@ -122,7 +122,7 @@ const ExplorerView = () => {
     return patternType === "scale" ? `${rootNote} ${scale}` : `${rootNote} ${chordType}`;
   }, [patternType, rootNote, scale, chordType]);
 
-  const highlightedPositions = useMemo(() => {
+  const { highlightedPositions, rootPositions } = useMemo(() => {
     const positions = getFretboardPositions(fretRange);
 
     // Get the pattern notes based on scale or chord
@@ -133,39 +133,45 @@ const ExplorerView = () => {
     const patternNotes = getPatternNotes(rootNote, intervals);
     const patternNoteSet = new Set(patternNotes);
 
-    return positions.filter((pos) => patternNoteSet.has(pos.note));
+    // All pattern positions (excluding root - those go in rootPositions)
+    const highlighted = positions.filter((pos) => patternNoteSet.has(pos.note) && pos.note !== rootNote);
+    // Root note positions only
+    const roots = positions.filter((pos) => pos.note === rootNote);
+
+    return { highlightedPositions: highlighted, rootPositions: roots };
   }, [fretRange, rootNote, patternType, scale, chordType]);
 
   return (
-    <div className="grid gap-8 lg:grid-cols-[2fr_1fr]" data-testid="explorer-view">
-      <section className="space-y-4">
-        <header className="space-y-2">
+    <div className="flex flex-col gap-6 lg:flex-row lg:gap-8" data-testid="explorer-view">
+      <section className="order-2 min-w-0 flex-1 space-y-4 lg:order-1">
+        <header className="space-y-1 sm:space-y-2">
           <p className="text-xs font-semibold uppercase tracking-[0.3em] text-emerald-300">Explorer mode</p>
-          <h1 className="text-2xl font-semibold text-white" data-testid="explorer-heading">Explore notes, scales, and chords</h1>
-          <p className="text-sm text-slate-300">Click around the fretboard to see every pattern on the neck.</p>
+          <h1 className="text-xl font-semibold text-white sm:text-2xl" data-testid="explorer-heading">Explore notes, scales, and chords</h1>
+          <p className="text-xs text-slate-300 sm:text-sm">Tap the fretboard to see patterns across the neck.</p>
         </header>
 
-        <div className="rounded-2xl border border-white/10 bg-white/5 p-6" data-testid="explorer-fretboard-section">
-          <div className="flex items-center justify-between">
+        <div className="rounded-2xl border border-white/10 bg-white/5 p-3 sm:p-6" data-testid="explorer-fretboard-section">
+          <div className="flex items-center justify-between gap-2">
             <div>
               <p className="text-xs uppercase tracking-[0.2em] text-slate-400">Overlay</p>
-              <p className="text-white" data-testid="explorer-overlay-label">{overlayLabel}</p>
+              <p className="text-sm text-white sm:text-base" data-testid="explorer-overlay-label">{overlayLabel}</p>
             </div>
             <button
               type="button"
               onClick={handleHint}
               data-testid="explorer-hint-button"
-              className="rounded-lg bg-emerald-400 px-4 py-2 text-sm font-semibold text-slate-900"
+              className="shrink-0 rounded-lg bg-emerald-400 px-3 py-1.5 text-xs font-semibold text-slate-900 sm:px-4 sm:py-2 sm:text-sm"
             >
-              {isLoadingHint ? "Loading hint..." : "Get AI hint"}
+              {isLoadingHint ? "Loading..." : "Get AI hint"}
             </button>
           </div>
 
-          <div className="mt-6" data-testid="explorer-fretboard-container">
+          <div className="mt-4 sm:mt-6" data-testid="explorer-fretboard-container">
             <Fretboard
               fretRange={fretRange}
               showNoteNames={showNoteNames}
               highlightedPositions={highlightedPositions}
+              rootPositions={rootPositions}
             />
           </div>
 
@@ -190,7 +196,7 @@ const ExplorerView = () => {
         ) : null}
       </section>
 
-      <aside className="space-y-6 rounded-2xl border border-white/10 bg-white/5 p-6" data-testid="explorer-controls">
+      <aside className="order-1 shrink-0 space-y-6 rounded-2xl border border-white/10 bg-white/5 p-4 lg:order-2 lg:w-72 lg:p-6" data-testid="explorer-controls">
         <div data-testid="explorer-root-note-section">
           <p className="text-xs uppercase tracking-[0.2em] text-slate-400">Root note</p>
           <div className="mt-3 grid grid-cols-6 gap-2" data-testid="explorer-root-note-grid">
@@ -303,10 +309,11 @@ const ExplorerView = () => {
           <button
             type="button"
             onClick={() => setHint(null)}
-            data-testid="explorer-clear-overlay"
-            className="w-full rounded-lg border border-white/10 bg-slate-950/60 px-3 py-2 text-left text-xs text-slate-300"
+            disabled={!hint}
+            data-testid="explorer-clear-hint"
+            className="w-full rounded-lg border border-white/10 bg-slate-950/60 px-3 py-2 text-left text-xs text-slate-300 disabled:opacity-50 disabled:cursor-not-allowed"
           >
-            Clear overlay
+            Clear AI hint
           </button>
         </div>
       </aside>

@@ -414,6 +414,23 @@ export interface HeatmapResponseDTO {
   filters: HeatmapFiltersDTO;
 }
 
+/** Single note mastery data item */
+export interface NoteMasteryItemDTO {
+  note: NoteEnum;
+  total_attempts: number;
+  correct_count: number;
+  error_count: number;
+  accuracy: number; // 0-100 percentage
+}
+
+/** Response for note mastery endpoint */
+export interface NoteMasteryResponseDTO {
+  data: NoteMasteryItemDTO[];
+  total_attempts: number;
+  total_errors: number;
+  overall_accuracy: number;
+}
+
 /** Statistics for a specific quiz type */
 export interface QuizTypeStatsDTO {
   count: number;

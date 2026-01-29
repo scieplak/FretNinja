@@ -20,7 +20,7 @@ const STRING_OPEN_NOTES: Record<number, NoteEnum> = {
 
 const getNoteIndex = (note: NoteEnum) => NOTES.indexOf(note);
 
-export const getFretboardPositions = (fretRange: 12 | 24): FretPosition[] => {
+export const getFretboardPositions = (fretRange: number): FretPosition[] => {
   const positions: FretPosition[] = [];
   for (let string = 6; string >= 1; string -= 1) {
     const openNote = STRING_OPEN_NOTES[string];
@@ -38,9 +38,11 @@ const SINGLE_MARKERS = [3, 5, 7, 9, 15, 17, 19, 21];
 const DOUBLE_MARKERS = [12, 24];
 
 type FretboardProps = {
-  fretRange?: 12 | 24;
+  fretRange?: number;
   showNoteNames?: boolean;
+  hideHighlightedNames?: boolean; // Hide note names on highlighted positions (for "name the note" quiz)
   highlightedPositions?: FretPosition[];
+  rootPositions?: FretPosition[]; // Root notes get special styling (purple) in explorer mode
   selectedPositions?: FretPosition[];
   correctPositions?: FretPosition[];
   incorrectPositions?: FretPosition[];
@@ -51,7 +53,9 @@ type FretboardProps = {
 const Fretboard = ({
   fretRange = 12,
   showNoteNames = false,
+  hideHighlightedNames = false,
   highlightedPositions = [],
+  rootPositions = [],
   selectedPositions = [],
   correctPositions = [],
   incorrectPositions = [],
@@ -78,6 +82,11 @@ const Fretboard = ({
   const incorrectSet = useMemo(
     () => new Set(incorrectPositions.map((pos) => `${pos.string}-${pos.fret}`)),
     [incorrectPositions]
+  );
+
+  const rootSet = useMemo(
+    () => new Set(rootPositions.map((pos) => `${pos.string}-${pos.fret}`)),
+    [rootPositions]
   );
 
   const frets = Array.from({ length: fretRange + 1 }, (_, index) => index);
@@ -151,10 +160,11 @@ const Fretboard = ({
                   )!;
                   const key = `${position.string}-${position.fret}`;
                   const isHighlighted = highlightedSet.has(key);
+                  const isRoot = rootSet.has(key);
                   const isSelected = selectedSet.has(key);
                   const isCorrect = correctSet.has(key);
                   const isIncorrect = incorrectSet.has(key);
-                  const showNote = showNoteNames || isSelected || isHighlighted || isCorrect || isIncorrect;
+                  const showNote = showNoteNames || isSelected || (isHighlighted && !hideHighlightedNames) || isRoot || isCorrect || isIncorrect;
 
                   return (
                     <div
@@ -193,9 +203,11 @@ const Fretboard = ({
                                 ? "incorrect bg-rose-500 text-white shadow-lg shadow-rose-500/50 scale-110"
                                 : isSelected
                                   ? "bg-purple-500 text-white shadow-lg shadow-purple-500/50 scale-105"
-                                  : isHighlighted
-                                    ? "bg-amber-400 text-slate-900 shadow-lg shadow-amber-400/50 ring-2 ring-amber-300 animate-pulse"
-                                    : "bg-slate-800/80 text-slate-400 hover:bg-slate-700 hover:text-white hover:scale-105"
+                                  : isRoot
+                                    ? "bg-violet-600 text-white shadow-lg shadow-violet-600/50 scale-105 ring-1 ring-violet-400/50"
+                                    : isHighlighted
+                                      ? "bg-emerald-500 text-white shadow-lg shadow-emerald-500/50 ring-1 ring-emerald-300/50"
+                                      : "bg-slate-800/80 text-slate-400 hover:bg-slate-700 hover:text-white hover:scale-105"
                           }
                           ${disabled ? "cursor-not-allowed opacity-50" : "cursor-pointer"}
                         `}

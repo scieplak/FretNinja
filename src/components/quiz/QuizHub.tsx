@@ -12,7 +12,7 @@ const MODES: QuizMode[] = [
   {
     id: "find-note",
     title: "Find the Note",
-    description: "Click the fretboard to find the displayed note.",
+    description: "Mark all positions of the displayed note on the fretboard.",
   },
   {
     id: "name-note",
@@ -32,9 +32,9 @@ const MODES: QuizMode[] = [
 ];
 
 const DIFFICULTIES: { id: Difficulty; title: string; description: string }[] = [
-  { id: "easy", title: "Easy", description: "Strings 1-3 only, no time limit." },
-  { id: "medium", title: "Medium", description: "Full fretboard (frets 0-12), no time limit." },
-  { id: "hard", title: "Hard", description: "Full fretboard, 30-second timer per question." },
+  { id: "easy", title: "Easy", description: "Frets 0-5, natural notes only (no sharps). Perfect for beginners." },
+  { id: "medium", title: "Medium", description: "Frets 0-9, all notes including sharps. No time pressure." },
+  { id: "hard", title: "Hard", description: "Full fretboard (0-12), all notes, 30-second timer." },
 ];
 
 const QuizHub = () => {

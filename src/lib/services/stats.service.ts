@@ -8,6 +8,9 @@ import type {
   StatsOverviewDTO,
   QuizTypeStatsDTO,
   DifficultyStatsDTO,
+  NoteMasteryResponseDTO,
+  NoteMasteryItemDTO,
+  NoteEnum,
 } from '../../types';
 
 type SupabaseClientType = SupabaseClient<Database>;
@@ -152,6 +155,81 @@ export class StatsService {
           from_date: filters.from_date || null,
           to_date: filters.to_date || null,
         },
+      },
+    };
+  }
+
+  async getNoteMastery(userId: string): Promise<ServiceResult<NoteMasteryResponseDTO>> {
+    const ALL_NOTES: NoteEnum[] = ['C', 'C#', 'D', 'D#', 'E', 'F', 'F#', 'G', 'G#', 'A', 'A#', 'B'];
+
+    // Query all answers with target_note for this user
+    const { data: rawData, error } = await this.supabase
+      .from('quiz_answers')
+      .select(
+        `
+        target_note,
+        is_correct,
+        quiz_sessions!inner (
+          user_id
+        )
+      `
+      )
+      .not('target_note', 'is', null);
+
+    if (error) {
+      console.error('Failed to fetch note mastery:', error.message);
+      return {
+        error: { status: 500, body: { code: 'SERVER_ERROR', message: 'Failed to fetch note mastery data' } },
+      };
+    }
+
+    // Filter by user and aggregate
+    const noteStats = new Map<NoteEnum, { correct: number; total: number }>();
+
+    // Initialize all notes
+    for (const note of ALL_NOTES) {
+      noteStats.set(note, { correct: 0, total: 0 });
+    }
+
+    // Aggregate data
+    for (const row of rawData || []) {
+      const session = row.quiz_sessions as unknown as { user_id: string };
+      if (session.user_id !== userId) continue;
+
+      const note = row.target_note as NoteEnum;
+      if (!note) continue;
+
+      const stats = noteStats.get(note);
+      if (stats) {
+        stats.total += 1;
+        if (row.is_correct) {
+          stats.correct += 1;
+        }
+      }
+    }
+
+    // Build response
+    const data: NoteMasteryItemDTO[] = ALL_NOTES.map((note) => {
+      const stats = noteStats.get(note)!;
+      return {
+        note,
+        total_attempts: stats.total,
+        correct_count: stats.correct,
+        error_count: stats.total - stats.correct,
+        accuracy: stats.total > 0 ? Math.round((stats.correct / stats.total) * 100) : 0,
+      };
+    });
+
+    const totalAttempts = data.reduce((sum, item) => sum + item.total_attempts, 0);
+    const totalErrors = data.reduce((sum, item) => sum + item.error_count, 0);
+    const overallAccuracy = totalAttempts > 0 ? Math.round(((totalAttempts - totalErrors) / totalAttempts) * 100) : 0;
+
+    return {
+      data: {
+        data,
+        total_attempts: totalAttempts,
+        total_errors: totalErrors,
+        overall_accuracy: overallAccuracy,
       },
     };
   }

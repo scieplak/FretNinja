@@ -26,7 +26,46 @@ type Question = {
   correctPositions?: FretPosition[];
 };
 
-const INTERVALS: IntervalEnum[] = ["minor_2nd", "major_2nd", "minor_3rd", "major_3rd"];
+// All intervals with their semitone distances
+const INTERVAL_SEMITONES: Record<IntervalEnum, number> = {
+  minor_2nd: 1,
+  major_2nd: 2,
+  minor_3rd: 3,
+  major_3rd: 4,
+  perfect_4th: 5,
+  tritone: 6,
+  perfect_5th: 7,
+  minor_6th: 8,
+  major_6th: 9,
+  minor_7th: 10,
+  major_7th: 11,
+  octave: 12,
+};
+
+// Reverse lookup: semitones -> interval name
+const SEMITONES_TO_INTERVAL: Record<number, IntervalEnum> = Object.fromEntries(
+  Object.entries(INTERVAL_SEMITONES).map(([interval, semitones]) => [semitones, interval as IntervalEnum])
+) as Record<number, IntervalEnum>;
+
+// Get interval between two notes (always ascending, 1-12 semitones)
+const getIntervalBetweenNotes = (note1: NoteEnum, note2: NoteEnum): IntervalEnum | null => {
+  const index1 = NOTES.indexOf(note1);
+  const index2 = NOTES.indexOf(note2);
+  let semitones = (index2 - index1 + 12) % 12;
+  if (semitones === 0) semitones = 12; // Same note = octave
+  return SEMITONES_TO_INTERVAL[semitones] ?? null;
+};
+
+// Intervals for each difficulty level
+const EASY_INTERVALS: IntervalEnum[] = ["minor_2nd", "major_2nd", "minor_3rd", "major_3rd", "perfect_4th", "perfect_5th"];
+const MEDIUM_INTERVALS: IntervalEnum[] = ["minor_2nd", "major_2nd", "minor_3rd", "major_3rd", "perfect_4th", "tritone", "perfect_5th", "minor_6th", "major_6th"];
+const ALL_INTERVALS: IntervalEnum[] = ["minor_2nd", "major_2nd", "minor_3rd", "major_3rd", "perfect_4th", "tritone", "perfect_5th", "minor_6th", "major_6th", "minor_7th", "major_7th", "octave"];
+
+const getIntervalsForDifficulty = (difficulty: Difficulty): IntervalEnum[] => {
+  if (difficulty === "easy") return EASY_INTERVALS;
+  if (difficulty === "medium") return MEDIUM_INTERVALS;
+  return ALL_INTERVALS;
+};
 
 const MODE_LABELS: Record<QuizMode, string> = {
   "find-note": "Find the Note",
@@ -61,28 +100,70 @@ const buildOptionSet = (correct: string, candidates: string[], count = 4) => {
   return Array.from(options);
 };
 
+// Natural notes only (no sharps/flats) - for Easy mode
+const NATURAL_NOTES: NoteEnum[] = ["C", "D", "E", "F", "G", "A", "B"];
+
+// Fisher-Yates shuffle for proper randomization
+const shuffleArray = <T,>(array: T[]): T[] => {
+  const result = [...array];
+  for (let i = result.length - 1; i > 0; i -= 1) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [result[i], result[j]] = [result[j], result[i]];
+  }
+  return result;
+};
+
+// Get fret range based on difficulty
+const getFretRange = (difficulty: Difficulty): 5 | 9 | 12 => {
+  if (difficulty === "easy") return 5;
+  if (difficulty === "medium") return 9;
+  return 12;
+};
+
 const getPositionPool = (difficulty: Difficulty): FretPosition[] => {
-  const allPositions = getFretboardPositions(12);
+  const fretRange = getFretRange(difficulty);
+  const allPositions = getFretboardPositions(12).filter((pos) => pos.fret <= fretRange);
+
   if (difficulty === "easy") {
-    return allPositions.filter((pos) => pos.string <= 3 && pos.fret <= 5);
+    // Easy: natural notes only (C, D, E, F, G, A, B), frets 0-5, all strings
+    return allPositions.filter((pos) => NATURAL_NOTES.includes(pos.note));
   }
-  if (difficulty === "medium") {
-    return allPositions;
-  }
+
+  // Medium & Hard: all notes within fret range
   return allPositions;
 };
 
 const buildQuestions = (mode: QuizMode, difficulty: Difficulty): Question[] => {
   const pool = getPositionPool(difficulty);
+  const shuffledPool = shuffleArray(pool);
   const questions: Question[] = [];
+  const usedPositions = new Set<string>();
+
+  // Get unique positions for questions
+  const getUniquePosition = (startIndex: number): FretPosition => {
+    for (let i = 0; i < shuffledPool.length; i += 1) {
+      const pos = shuffledPool[(startIndex + i) % shuffledPool.length];
+      const key = `${pos.string}-${pos.fret}`;
+      if (!usedPositions.has(key)) {
+        usedPositions.add(key);
+        return pos;
+      }
+    }
+    // Fallback if all positions used (shouldn't happen with 10 questions)
+    return shuffledPool[startIndex % shuffledPool.length];
+  };
 
   for (let index = 0; index < 10; index += 1) {
-    const position = pool[(index * 3) % pool.length];
+    const position = getUniquePosition(index);
+
     if (mode === "find-note") {
+      // Find all positions of this note within the difficulty's fret range
+      const allCorrectPositions = pool.filter((pos) => pos.note === position.note);
       questions.push({
-        prompt: `Find: ${position.note}`,
+        prompt: `Find all: ${position.note}`,
         targetNote: position.note,
         position,
+        correctPositions: allCorrectPositions,
       });
       continue;
     }
@@ -99,11 +180,12 @@ const buildQuestions = (mode: QuizMode, difficulty: Difficulty): Question[] => {
     }
 
     if (mode === "mark-chord") {
-      const chordPositions = [
-        position,
-        pool[(index + 3) % pool.length],
-        pool[(index + 5) % pool.length],
-      ];
+      // Get chord positions from the available pool
+      const chordPositions = [position];
+      for (let j = 1; j < 3; j += 1) {
+        const chordPos = getUniquePosition(index * 10 + j);
+        chordPositions.push(chordPos);
+      }
       questions.push({
         prompt: `Mark all notes of: ${position.note} major`,
         targetRootNote: position.note,
@@ -114,20 +196,63 @@ const buildQuestions = (mode: QuizMode, difficulty: Difficulty): Question[] => {
       continue;
     }
 
-    const referencePosition = pool[(index + 2) % pool.length];
+    // Find a second position that creates a valid interval
+    const availableIntervals = getIntervalsForDifficulty(difficulty);
+    let referencePosition: FretPosition | null = null;
+    let targetInterval: IntervalEnum | null = null;
+
+    // Try to find a position that creates a valid interval within difficulty
+    for (let attempt = 0; attempt < shuffledPool.length; attempt += 1) {
+      const candidate = shuffledPool[(index * 10 + 5 + attempt) % shuffledPool.length];
+      if (candidate.string === position.string && candidate.fret === position.fret) continue;
+
+      const interval = getIntervalBetweenNotes(position.note, candidate.note);
+      if (interval && availableIntervals.includes(interval)) {
+        referencePosition = candidate;
+        targetInterval = interval;
+        break;
+      }
+    }
+
+    // Fallback if no valid interval found
+    if (!referencePosition || !targetInterval) {
+      referencePosition = getUniquePosition(index * 10 + 5);
+      targetInterval = getIntervalBetweenNotes(position.note, referencePosition.note) ?? "major_3rd";
+    }
+
+    // Show all intervals for the difficulty level as options
+    const options = shuffleArray([...availableIntervals]);
+
     questions.push({
-      prompt: "Identify the interval between the two notes.",
-      targetInterval: INTERVALS[index % INTERVALS.length],
+      prompt: `What interval is between ${position.note} and ${referencePosition.note}?`,
+      targetInterval,
       position,
       referencePosition,
-      options: ["minor_2nd", "major_2nd", "minor_3rd", "major_3rd"],
+      options,
     });
   }
 
   return questions;
 };
 
-const formatIntervalLabel = (value: string) => value.replace("_", " ");
+const INTERVAL_LABELS: Record<IntervalEnum, string> = {
+  minor_2nd: "Minor 2nd",
+  major_2nd: "Major 2nd",
+  minor_3rd: "Minor 3rd",
+  major_3rd: "Major 3rd",
+  perfect_4th: "Perfect 4th",
+  tritone: "Tritone",
+  perfect_5th: "Perfect 5th",
+  minor_6th: "Minor 6th",
+  major_6th: "Major 6th",
+  minor_7th: "Minor 7th",
+  major_7th: "Major 7th",
+  octave: "Octave",
+};
+
+const formatIntervalLabel = (value: string) => {
+  return INTERVAL_LABELS[value as IntervalEnum] ?? value.replace(/_/g, " ");
+};
 
 const QuizActiveView = ({ mode, user }: QuizActiveViewProps) => {
   const isGuest = !user;
@@ -267,7 +392,8 @@ const QuizActiveView = ({ mode, user }: QuizActiveViewProps) => {
   const handleSelectPosition = useCallback(
     (position: FretPosition) => {
       if (status !== "question") return;
-      if (mode === "mark-chord") {
+      if (mode === "mark-chord" || mode === "find-note") {
+        // Both modes allow toggling multiple positions
         setSelectedPositions((prev) => {
           const exists = prev.find((item) => item.fret === position.fret && item.string === position.string);
           if (exists) {
@@ -277,29 +403,8 @@ const QuizActiveView = ({ mode, user }: QuizActiveViewProps) => {
         });
         return;
       }
-
-      if (mode === "find-note") {
-        const isCorrect = position.note === currentQuestion.targetNote;
-        // Show feedback on the fretboard
-        if (isCorrect) {
-          setFeedbackPositions({ correct: [position], incorrect: [] });
-        } else {
-          // Find all correct positions for this note
-          const allPositions = getFretboardPositions(12);
-          const correctPositionsForNote = allPositions.filter(
-            (pos) => pos.note === currentQuestion.targetNote
-          );
-          setFeedbackPositions({ correct: correctPositionsForNote, incorrect: [position] });
-        }
-        handleAnswer({
-          isCorrect,
-          userAnswer: `${position.note} (S${position.string}/F${position.fret})`,
-          userAnswerRaw: position.note,
-          correctAnswer: `${currentQuestion.targetNote}`,
-        });
-      }
     },
-    [currentQuestion, mode, status]
+    [mode, status]
   );
 
   const handleOptionSelect = useCallback(
@@ -329,6 +434,39 @@ const QuizActiveView = ({ mode, user }: QuizActiveViewProps) => {
       correctAnswer: formatIntervalLabel(currentQuestion.targetNote ?? currentQuestion.targetInterval ?? ""),
     });
   }, [currentQuestion, mode, selectedOption, status]);
+
+  const submitFindNoteAnswer = useCallback(() => {
+    if (status !== "question") return;
+    const correctPositionsForNote = currentQuestion.correctPositions ?? [];
+    const isCorrect =
+      selectedPositions.length === correctPositionsForNote.length &&
+      selectedPositions.every((pos) =>
+        correctPositionsForNote.some((correct) => correct.fret === pos.fret && correct.string === pos.string)
+      );
+
+    // Show feedback on the fretboard
+    const correctlySelected = selectedPositions.filter((pos) =>
+      correctPositionsForNote.some((correct) => correct.fret === pos.fret && correct.string === pos.string)
+    );
+    const incorrectlySelected = selectedPositions.filter(
+      (pos) => !correctPositionsForNote.some((correct) => correct.fret === pos.fret && correct.string === pos.string)
+    );
+    const missedCorrect = correctPositionsForNote.filter(
+      (correct) => !selectedPositions.some((pos) => pos.fret === correct.fret && pos.string === correct.string)
+    );
+
+    setFeedbackPositions({
+      correct: [...correctlySelected, ...missedCorrect],
+      incorrect: incorrectlySelected,
+    });
+
+    handleAnswer({
+      isCorrect,
+      userAnswer: `${selectedPositions.length} positions`,
+      userAnswerRaw: currentQuestion.targetNote,
+      correctAnswer: `${correctPositionsForNote.length} positions of ${currentQuestion.targetNote}`,
+    });
+  }, [currentQuestion.correctPositions, currentQuestion.targetNote, selectedPositions, status]);
 
   const submitChordAnswer = useCallback(() => {
     if (status !== "question") return;
@@ -388,8 +526,8 @@ const QuizActiveView = ({ mode, user }: QuizActiveViewProps) => {
 
       if (mode === "find-note") {
         answerPayload.target_note = currentQuestion.targetNote ?? null;
-        answerPayload.fret_position = currentQuestion.position.fret;
-        answerPayload.string_number = currentQuestion.position.string;
+        // Store user's selected positions for heatmap tracking
+        answerPayload.user_answer_positions = selectedPositions.map((pos) => ({ fret: pos.fret, string: pos.string }));
       }
       if (mode === "name-note") {
         answerPayload.target_note = currentQuestion.targetNote ?? null;
@@ -554,8 +692,9 @@ const QuizActiveView = ({ mode, user }: QuizActiveViewProps) => {
 
       <section className="rounded-2xl border border-white/10 bg-white/5 p-6" data-testid="quiz-fretboard-section">
         <Fretboard
-          fretRange={12}
+          fretRange={getFretRange(difficulty)}
           showNoteNames={false}
+          hideHighlightedNames={mode === "name-note"}
           highlightedPositions={
             // find-note: no highlights - user must find the note
             // name-note: highlight the position - user identifies the note name
@@ -582,14 +721,21 @@ const QuizActiveView = ({ mode, user }: QuizActiveViewProps) => {
       {mode === "name-note" || mode === "recognize-interval" ? (
         <section className="rounded-2xl border border-white/10 bg-white/5 p-6" data-testid="quiz-answer-options-section">
           <h2 className="text-sm font-semibold text-white">Choose your answer</h2>
-          <div className="mt-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-4" data-testid="quiz-answer-options">
+          <div
+            className={`mt-4 grid gap-2 ${
+              mode === "recognize-interval"
+                ? "grid-cols-2 sm:grid-cols-3 lg:grid-cols-4"
+                : "grid-cols-2 lg:grid-cols-4"
+            }`}
+            data-testid="quiz-answer-options"
+          >
             {currentQuestion.options?.map((option) => (
               <button
                 key={option}
                 type="button"
                 onClick={() => handleOptionSelect(option)}
                 data-testid={`quiz-answer-option-${option}`}
-                className={`rounded-lg border px-4 py-3 text-sm transition ${
+                className={`rounded-lg border px-3 py-2 text-sm transition ${
                   selectedOption === option
                     ? "border-emerald-400/60 bg-emerald-400/10 text-emerald-100"
                     : "border-white/10 bg-slate-950/60 text-slate-200 hover:border-emerald-300/40"
@@ -608,6 +754,27 @@ const QuizActiveView = ({ mode, user }: QuizActiveViewProps) => {
           >
             Submit answer
           </button>
+        </section>
+      ) : null}
+
+      {mode === "find-note" ? (
+        <section className="rounded-2xl border border-white/10 bg-white/5 p-6" data-testid="quiz-find-note-section">
+          <div className="flex items-center justify-between">
+            <div>
+              <h2 className="text-sm font-semibold text-white">Find all positions of {currentQuestion.targetNote}</h2>
+              <p className="text-xs text-slate-300" data-testid="quiz-find-note-selection-count">
+                {selectedPositions.length}/{currentQuestion.correctPositions?.length ?? 0} positions marked
+              </p>
+            </div>
+            <button
+              type="button"
+              onClick={submitFindNoteAnswer}
+              data-testid="quiz-submit-find-note-button"
+              className="rounded-lg bg-emerald-400 px-4 py-2 text-sm font-semibold text-slate-900"
+            >
+              Submit
+            </button>
+          </div>
         </section>
       ) : null}
 
