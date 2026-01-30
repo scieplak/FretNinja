@@ -65,8 +65,10 @@ export class ExplorerPage extends BasePage {
     this.hintDisplay = page.getByTestId("explorer-hint-result");
     this.hintError = page.getByTestId("explorer-hint-error");
 
-    // Highlighted notes on fretboard (amber/pulse styling)
-    this.highlightedNotes = page.locator("[data-testid^='fretboard-position-'][class*='animate-pulse'], [data-testid^='fretboard-position-'][class*='amber']");
+    // Highlighted notes on fretboard (emerald styling for scale/chord patterns)
+    this.highlightedNotes = page.locator(
+      "[data-testid^='fretboard-position-'][class*='emerald']"
+    );
   }
 
   async goto(): Promise<void> {
@@ -91,9 +93,9 @@ export class ExplorerPage extends BasePage {
     // Map short names to full option names and convert to testid format
     // Options are: "Major Scale", "Natural Minor", "Pentatonic Major", "Pentatonic Minor"
     const scaleMap: Record<string, string> = {
-      "major": "major-scale",
+      major: "major-scale",
       "major scale": "major-scale",
-      "minor": "natural-minor",
+      minor: "natural-minor",
       "natural minor": "natural-minor",
       "pentatonic major": "pentatonic-major",
       "pentatonic minor": "pentatonic-minor",
@@ -122,12 +124,11 @@ export class ExplorerPage extends BasePage {
   async requestAIHint(): Promise<void> {
     await this.requestHintButton.click();
     // Wait for loading to complete
-    await this.page.waitForFunction(
-      () => !document.body.innerText.includes("Loading hint"),
-      { timeout: 15000 }
-    ).catch(() => {
-      // May already be done
-    });
+    await this.page
+      .waitForFunction(() => !document.body.innerText.includes("Loading hint"), { timeout: 15000 })
+      .catch(() => {
+        // May already be done
+      });
   }
 
   async getHintText(): Promise<string | null> {

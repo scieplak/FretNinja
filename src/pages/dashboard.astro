@@ -1,7 +1,13 @@
 ---
 import AppLayout from "../layouts/AppLayout.astro";
 import DashboardView from "../components/dashboard/DashboardView";
-import type { ProfileDTO, StatsOverviewDTO, UserAchievementsDTO, QuizSessionListDTO, NoteMasteryResponseDTO } from "../types";
+import type {
+  ProfileDTO,
+  StatsOverviewDTO,
+  UserAchievementsDTO,
+  QuizSessionListDTO,
+  NoteMasteryResponseDTO,
+} from "../types";
 
 const user = Astro.locals.user;
 const supabase = Astro.locals.supabase;

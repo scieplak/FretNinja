@@ -1,16 +1,16 @@
-import type { SupabaseClient } from '@supabase/supabase-js';
-import type { Database } from '../../db/database.types';
+import type { SupabaseClient } from "@supabase/supabase-js";
+import type { Database } from "../../db/database.types";
 import type {
   AIHintCommand,
   AIHintResponseDTO,
   PersonalizedTipsCommand,
   PersonalizedTipsResponseDTO,
   ApiErrorDTO,
-} from '../../types';
+} from "../../types";
 
 type SupabaseClientType = SupabaseClient<Database>;
 
-const OPENROUTER_API_URL = 'https://openrouter.ai/api/v1/chat/completions';
+const OPENROUTER_API_URL = "https://openrouter.ai/api/v1/chat/completions";
 
 interface ServiceResult<T> {
   data?: T;
@@ -21,14 +21,14 @@ export class AIService {
   private apiKey: string;
 
   constructor() {
-    this.apiKey = import.meta.env.OPENROUTER_API_KEY || '';
+    this.apiKey = import.meta.env.OPENROUTER_API_KEY || "";
   }
 
   async generateHint(command: AIHintCommand): Promise<ServiceResult<AIHintResponseDTO>> {
     if (!this.apiKey) {
-      console.error('OpenRouter API key not configured');
+      console.error("OpenRouter API key not configured");
       return {
-        error: { status: 503, body: { code: 'AI_UNAVAILABLE', message: 'AI service not configured' } },
+        error: { status: 503, body: { code: "AI_UNAVAILABLE", message: "AI service not configured" } },
       };
     }
 
@@ -36,22 +36,22 @@ export class AIService {
 
     try {
       const response = await fetch(OPENROUTER_API_URL, {
-        method: 'POST',
+        method: "POST",
         headers: {
           Authorization: `Bearer ${this.apiKey}`,
-          'Content-Type': 'application/json',
-          'HTTP-Referer': import.meta.env.SITE_URL || 'https://fretninja.com',
-          'X-Title': 'FretNinja',
+          "Content-Type": "application/json",
+          "HTTP-Referer": import.meta.env.SITE_URL || "https://fretninja.com",
+          "X-Title": "FretNinja",
         },
         body: JSON.stringify({
-          model: 'anthropic/claude-3-haiku',
+          model: "anthropic/claude-3-haiku",
           messages: [
             {
-              role: 'system',
+              role: "system",
               content: this.getHintSystemPrompt(),
             },
             {
-              role: 'user',
+              role: "user",
               content: prompt,
             },
           ],
@@ -65,14 +65,14 @@ export class AIService {
           return {
             error: {
               status: 429,
-              body: { code: 'RATE_LIMITED', message: 'Too many hint requests. Please wait before trying again.' },
+              body: { code: "RATE_LIMITED", message: "Too many hint requests. Please wait before trying again." },
             },
           };
         }
 
-        console.error('OpenRouter API error:', response.status);
+        console.error("OpenRouter API error:", response.status);
         return {
-          error: { status: 503, body: { code: 'AI_UNAVAILABLE', message: 'AI service temporarily unavailable' } },
+          error: { status: 503, body: { code: "AI_UNAVAILABLE", message: "AI service temporarily unavailable" } },
         };
       }
 
@@ -81,16 +81,16 @@ export class AIService {
 
       if (!content) {
         return {
-          error: { status: 500, body: { code: 'SERVER_ERROR', message: 'Failed to generate hint' } },
+          error: { status: 500, body: { code: "SERVER_ERROR", message: "Failed to generate hint" } },
         };
       }
 
       const parsed = this.parseHintResponse(content);
       return { data: parsed };
     } catch (error) {
-      console.error('AI service error:', error);
+      console.error("AI service error:", error);
       return {
-        error: { status: 503, body: { code: 'AI_UNAVAILABLE', message: 'AI service temporarily unavailable' } },
+        error: { status: 503, body: { code: "AI_UNAVAILABLE", message: "AI service temporarily unavailable" } },
       };
     }
   }
@@ -144,7 +144,7 @@ Use sharp notation only (C#, not Db). String numbers: 1=high E, 6=low E.`;
       prompt += `\nUser's recent error positions: ${JSON.stringify(command.user_error_positions)}`;
     }
 
-    prompt += '\n\nPlease provide a helpful hint for learning this.';
+    prompt += "\n\nPlease provide a helpful hint for learning this.";
 
     return prompt;
   }
@@ -157,7 +157,7 @@ Use sharp notation only (C#, not Db). String numbers: 1=high E, 6=low E.`;
         return {
           hint: parsed.hint || content,
           related_positions: parsed.related_positions || [],
-          memorization_tip: parsed.memorization_tip || '',
+          memorization_tip: parsed.memorization_tip || "",
         };
       }
     } catch {
@@ -167,7 +167,7 @@ Use sharp notation only (C#, not Db). String numbers: 1=high E, 6=low E.`;
     return {
       hint: content,
       related_positions: [],
-      memorization_tip: '',
+      memorization_tip: "",
     };
   }
 
@@ -177,15 +177,15 @@ Use sharp notation only (C#, not Db). String numbers: 1=high E, 6=low E.`;
     command: PersonalizedTipsCommand
   ): Promise<ServiceResult<PersonalizedTipsResponseDTO>> {
     if (!this.apiKey) {
-      console.error('OpenRouter API key not configured');
+      console.error("OpenRouter API key not configured");
       return {
-        error: { status: 503, body: { code: 'AI_UNAVAILABLE', message: 'AI service not configured' } },
+        error: { status: 503, body: { code: "AI_UNAVAILABLE", message: "AI service not configured" } },
       };
     }
 
     // 1. Fetch error data
-    let query = supabase
-      .from('quiz_answers')
+    const query = supabase
+      .from("quiz_answers")
       .select(
         `
         fret_position,
@@ -197,15 +197,15 @@ Use sharp notation only (C#, not Db). String numbers: 1=high E, 6=low E.`;
         )
       `
       )
-      .eq('is_correct', false)
-      .not('fret_position', 'is', null);
+      .eq("is_correct", false)
+      .not("fret_position", "is", null);
 
     const { data: errors, error: errorsError } = await query.limit(100);
 
     if (errorsError) {
-      console.error('Failed to fetch error data:', errorsError.message);
+      console.error("Failed to fetch error data:", errorsError.message);
       return {
-        error: { status: 500, body: { code: 'SERVER_ERROR', message: 'Failed to generate tips' } },
+        error: { status: 500, body: { code: "SERVER_ERROR", message: "Failed to generate tips" } },
       };
     }
 
@@ -222,7 +222,7 @@ Use sharp notation only (C#, not Db). String numbers: 1=high E, 6=low E.`;
       return {
         error: {
           status: 404,
-          body: { code: 'INSUFFICIENT_DATA', message: 'Not enough quiz data to generate personalized tips' },
+          body: { code: "INSUFFICIENT_DATA", message: "Not enough quiz data to generate personalized tips" },
         },
       };
     }
@@ -236,22 +236,22 @@ Use sharp notation only (C#, not Db). String numbers: 1=high E, 6=low E.`;
     // 5. Call OpenRouter
     try {
       const response = await fetch(OPENROUTER_API_URL, {
-        method: 'POST',
+        method: "POST",
         headers: {
           Authorization: `Bearer ${this.apiKey}`,
-          'Content-Type': 'application/json',
-          'HTTP-Referer': import.meta.env.SITE_URL || 'https://fretninja.com',
-          'X-Title': 'FretNinja',
+          "Content-Type": "application/json",
+          "HTTP-Referer": import.meta.env.SITE_URL || "https://fretninja.com",
+          "X-Title": "FretNinja",
         },
         body: JSON.stringify({
-          model: 'anthropic/claude-3-haiku',
+          model: "anthropic/claude-3-haiku",
           messages: [
             {
-              role: 'system',
+              role: "system",
               content: this.getPersonalizedTipsSystemPrompt(),
             },
             {
-              role: 'user',
+              role: "user",
               content: prompt,
             },
           ],
@@ -265,13 +265,13 @@ Use sharp notation only (C#, not Db). String numbers: 1=high E, 6=low E.`;
           return {
             error: {
               status: 429,
-              body: { code: 'RATE_LIMITED', message: 'Too many requests. Please wait before trying again.' },
+              body: { code: "RATE_LIMITED", message: "Too many requests. Please wait before trying again." },
             },
           };
         }
 
         return {
-          error: { status: 503, body: { code: 'AI_UNAVAILABLE', message: 'AI service temporarily unavailable' } },
+          error: { status: 503, body: { code: "AI_UNAVAILABLE", message: "AI service temporarily unavailable" } },
         };
       }
 
@@ -280,22 +280,22 @@ Use sharp notation only (C#, not Db). String numbers: 1=high E, 6=low E.`;
 
       if (!content) {
         return {
-          error: { status: 500, body: { code: 'SERVER_ERROR', message: 'Failed to generate tips' } },
+          error: { status: 500, body: { code: "SERVER_ERROR", message: "Failed to generate tips" } },
         };
       }
 
       const parsed = this.parsePersonalizedTipsResponse(content);
       return { data: parsed };
     } catch (error) {
-      console.error('AI service error:', error);
+      console.error("AI service error:", error);
       return {
-        error: { status: 503, body: { code: 'AI_UNAVAILABLE', message: 'AI service temporarily unavailable' } },
+        error: { status: 503, body: { code: "AI_UNAVAILABLE", message: "AI service temporarily unavailable" } },
       };
     }
   }
 
   private aggregateErrorPatterns(
-    errors: Array<{ fret_position: number | null; string_number: number | null; target_note: string | null }>
+    errors: { fret_position: number | null; string_number: number | null; target_note: string | null }[]
   ): { byPosition: Record<string, number>; byNote: Record<string, number>; byString: Record<number, number> } {
     const byPosition: Record<string, number> = {};
     const byNote: Record<string, number> = {};
@@ -354,13 +354,13 @@ Use sharp notation (C#, not Db). String numbers: 1=high E, 6=low E.`;
     return `Analyze these error patterns and provide ${limit} personalized tips:
 
 Most frequent error positions:
-${topPositions.map(([pos, count]) => `- ${pos}: ${count} errors`).join('\n')}
+${topPositions.map(([pos, count]) => `- ${pos}: ${count} errors`).join("\n")}
 
 Most frequently missed notes:
-${topNotes.map(([note, count]) => `- ${note}: ${count} errors`).join('\n')}
+${topNotes.map(([note, count]) => `- ${note}: ${count} errors`).join("\n")}
 
 Errors by string:
-${topStrings.map(([string, count]) => `- String ${string}: ${count} errors`).join('\n')}
+${topStrings.map(([string, count]) => `- String ${string}: ${count} errors`).join("\n")}
 
 Please provide ${limit} specific, actionable tips based on these patterns.`;
   }
@@ -372,7 +372,7 @@ Please provide ${limit} specific, actionable tips based on these patterns.`;
         const parsed = JSON.parse(jsonMatch[0]);
         return {
           tips: parsed.tips || [],
-          overall_recommendation: parsed.overall_recommendation || '',
+          overall_recommendation: parsed.overall_recommendation || "",
         };
       }
     } catch {

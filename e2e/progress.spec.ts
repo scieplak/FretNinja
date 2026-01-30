@@ -19,11 +19,11 @@ test.describe("Progress Page", () => {
     await page.waitForURL(/dashboard/, { timeout: 15000 });
   });
 
-  test.describe("Overview Tab", () => {
+  test.describe("Stats Tab", () => {
     test("should display statistics overview", async ({ progressPage }) => {
       await progressPage.goto();
 
-      await progressPage.switchToOverviewTab();
+      await progressPage.switchToStatsTab();
 
       await expect(progressPage.totalQuizzes).toBeVisible();
     });
@@ -31,7 +31,7 @@ test.describe("Progress Page", () => {
     test("should show stats by quiz type", async ({ progressPage }) => {
       await progressPage.goto();
 
-      await progressPage.switchToOverviewTab();
+      await progressPage.switchToStatsTab();
 
       await expect(progressPage.byQuizTypeStats).toBeVisible();
     });
@@ -39,83 +39,9 @@ test.describe("Progress Page", () => {
     test("should show stats by difficulty", async ({ progressPage }) => {
       await progressPage.goto();
 
-      await progressPage.switchToOverviewTab();
+      await progressPage.switchToStatsTab();
 
       await expect(progressPage.byDifficultyStats).toBeVisible();
-    });
-  });
-
-  test.describe("Heatmap Tab", () => {
-    // PROG-001
-    test("should display error heatmap fretboard", async ({ progressPage }) => {
-      await progressPage.goto();
-
-      await progressPage.switchToHeatmapTab();
-
-      await expect(progressPage.heatmapFretboard).toBeVisible();
-    });
-
-    // PROG-002
-    test("should update heatmap when filtering by quiz type", async ({ progressPage, page }) => {
-      await progressPage.goto();
-
-      await progressPage.switchToHeatmapTab();
-
-      // Get initial hotspot count
-      const initialCount = await progressPage.getErrorHotspotsCount();
-
-      // Filter by quiz type
-      await progressPage.filterByQuizType("find_note");
-      await page.waitForTimeout(500);
-
-      // Heatmap should update (count may change)
-      const filteredCount = await progressPage.getErrorHotspotsCount();
-
-      // Both should be valid states
-      expect(filteredCount).toBeGreaterThanOrEqual(0);
-      expect(initialCount).toBeGreaterThanOrEqual(0);
-    });
-
-    // PROG-003
-    test("should filter by date range", async ({ progressPage, page }) => {
-      await progressPage.goto();
-      await progressPage.switchToHeatmapTab();
-
-      // Wait for heatmap to load
-      await expect(progressPage.heatmapFretboard).toBeVisible();
-
-      // Check for filter controls - either by data-testid or by element type
-      const quizTypeFilter = await progressPage.quizTypeFilter.isVisible().catch(() => false);
-      const dateRangeFilter = await progressPage.dateRangeFilter.isVisible().catch(() => false);
-      const hasSelects = (await page.locator("select").count()) > 0;
-
-      // Filters should be present in the heatmap tab
-      expect(quizTypeFilter || dateRangeFilter || hasSelects).toBe(true);
-
-      // The heatmap content should remain visible after checking filters
-      await expect(progressPage.heatmapFretboard).toBeVisible();
-    });
-
-    // PROG-005
-    test("should show empty state message when no data", async ({ progressPage }) => {
-      await progressPage.goto();
-
-      await progressPage.switchToHeatmapTab();
-
-      // Check for either heatmap data or empty state
-      const isEmpty = await progressPage.isEmptyState();
-      const hasData = (await progressPage.getErrorHotspotsCount()) > 0;
-
-      // One of these should be true
-      expect(isEmpty || hasData).toBe(true);
-    });
-
-    test("should display heatmap legend", async ({ progressPage }) => {
-      await progressPage.goto();
-
-      await progressPage.switchToHeatmapTab();
-
-      await expect(progressPage.heatmapLegend).toBeVisible();
     });
   });
 
@@ -159,32 +85,30 @@ test.describe("Progress Page", () => {
     test("should switch between tabs correctly", async ({ progressPage }) => {
       await progressPage.goto();
 
-      // Switch to heatmap
-      await progressPage.switchToHeatmapTab();
-      await expect(progressPage.heatmapFretboard).toBeVisible();
+      // Switch to stats
+      await progressPage.switchToStatsTab();
+      await expect(progressPage.totalQuizzes).toBeVisible();
 
       // Switch to history
       await progressPage.switchToHistoryTab();
       await expect(progressPage.sessionHistoryList).toBeVisible();
 
-      // Switch back to overview
-      await progressPage.switchToOverviewTab();
-      await expect(progressPage.totalQuizzes).toBeVisible();
+      // Switch back to mastery
+      await progressPage.switchToMasteryTab();
+      // Mastery tab content should be visible
+      await expect(progressPage.masteryContainer).toBeVisible();
     });
   });
 
   test.describe("Data Accuracy", () => {
-    test("should show consistent total quizzes with dashboard", async ({
-      progressPage,
-      dashboardPage,
-    }) => {
+    test("should show consistent total quizzes with dashboard", async ({ progressPage, dashboardPage }) => {
       // Get dashboard count
       await dashboardPage.goto();
       const dashboardCount = await dashboardPage.getTotalQuizzes();
 
       // Get progress page count
       await progressPage.goto();
-      await progressPage.switchToOverviewTab();
+      await progressPage.switchToStatsTab();
       const progressCount = await progressPage.getTotalQuizzes();
 
       expect(progressCount).toBe(dashboardCount);
@@ -196,12 +120,11 @@ test.describe("Progress Page", () => {
       await progressPage.goto();
 
       // Page should load without errors - tabs should be visible
-      await expect(progressPage.heatmapTab).toBeVisible();
-      await expect(progressPage.overviewTab).toBeVisible();
+      await expect(progressPage.masteryTab).toBeVisible();
+      await expect(progressPage.statsTab).toBeVisible();
       await expect(progressPage.historyTab).toBeVisible();
 
       // Page content should be visible (either data or loading state)
-      // The heatmap tab is the default, so check for its content
       const hasContent = await page.locator("section").first().isVisible();
       expect(hasContent).toBe(true);
     });

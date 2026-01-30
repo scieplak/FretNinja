@@ -31,9 +31,9 @@ const isAuthenticated = !!user;
             class="h-6 w-6"
             aria-hidden="true"
           >
-            <path d="M12 2L2 7l10 5 10-5-10-5z" />
-            <path d="M2 17l10 5 10-5" />
-            <path d="M2 12l10 5 10-5" />
+            <path d="M12 2L2 7l10 5 10-5-10-5z"></path>
+            <path d="M2 17l10 5 10-5"></path>
+            <path d="M2 12l10 5 10-5"></path>
           </svg>
           <span class="text-lg font-bold tracking-tight">FretNinja</span>
         </a>
@@ -67,26 +67,28 @@ const isAuthenticated = !!user;
 
         <div class="flex items-center gap-3">
           <div id="user-menu-slot">
-            {isAuthenticated ? (
-              <div class="flex items-center gap-3">
-                <span class="hidden text-sm text-slate-300 sm:inline">{user?.email}</span>
-                <form action="/api/auth/logout" method="POST">
-                  <button
-                    type="submit"
-                    class="rounded-lg border border-white/10 bg-white/5 px-4 py-2 text-sm font-medium text-slate-300 transition hover:border-rose-400/40 hover:text-white"
-                  >
-                    Sign out
-                  </button>
-                </form>
-              </div>
-            ) : (
-              <a
-                href="/login"
-                class="rounded-lg border border-white/10 bg-white/5 px-4 py-2 text-sm font-medium text-slate-300 transition hover:border-emerald-300/40 hover:text-white"
-              >
-                Sign in
-              </a>
-            )}
+            {
+              isAuthenticated ? (
+                <div class="flex items-center gap-3">
+                  <span class="hidden text-sm text-slate-300 sm:inline">{user?.email}</span>
+                  <form action="/api/auth/logout" method="POST">
+                    <button
+                      type="submit"
+                      class="rounded-lg border border-white/10 bg-white/5 px-4 py-2 text-sm font-medium text-slate-300 transition hover:border-rose-400/40 hover:text-white"
+                    >
+                      Sign out
+                    </button>
+                  </form>
+                </div>
+              ) : (
+                <a
+                  href="/login"
+                  class="rounded-lg border border-white/10 bg-white/5 px-4 py-2 text-sm font-medium text-slate-300 transition hover:border-emerald-300/40 hover:text-white"
+                >
+                  Sign in
+                </a>
+              )
+            }
           </div>
           <button
             type="button"
@@ -105,18 +107,15 @@ const isAuthenticated = !!user;
               class="h-5 w-5"
               aria-hidden="true"
             >
-              <line x1="4" x2="20" y1="12" y2="12" />
-              <line x1="4" x2="20" y1="6" y2="6" />
-              <line x1="4" x2="20" y1="18" y2="18" />
+              <line x1="4" x2="20" y1="12" y2="12"></line>
+              <line x1="4" x2="20" y1="6" y2="6"></line>
+              <line x1="4" x2="20" y1="18" y2="18"></line>
             </svg>
           </button>
         </div>
       </nav>
 
-      <div
-        id="mobile-menu"
-        class="hidden border-t border-white/5 bg-slate-950/95 px-6 py-4 md:hidden"
-      >
+      <div id="mobile-menu" class="hidden border-t border-white/5 bg-slate-950/95 px-6 py-4 md:hidden">
         <div class="flex flex-col gap-1">
           <a
             href="/quiz"
@@ -143,26 +142,28 @@ const isAuthenticated = !!user;
             Progress
           </a>
           <div class="mt-2 border-t border-white/5 pt-2">
-            {isAuthenticated ? (
-              <>
-                <p class="px-4 py-2 text-xs text-slate-400">{user?.email}</p>
-                <form action="/api/auth/logout" method="POST">
-                  <button
-                    type="submit"
-                    class="w-full rounded-lg px-4 py-2.5 text-left text-sm font-medium text-rose-300 transition hover:bg-white/5 hover:text-rose-200"
-                  >
-                    Sign out
-                  </button>
-                </form>
-              </>
-            ) : (
-              <a
-                href="/login"
-                class="block rounded-lg px-4 py-2.5 text-sm font-medium text-emerald-300 transition hover:bg-white/5 hover:text-emerald-200"
-              >
-                Sign in
-              </a>
-            )}
+            {
+              isAuthenticated ? (
+                <>
+                  <p class="px-4 py-2 text-xs text-slate-400">{user?.email}</p>
+                  <form action="/api/auth/logout" method="POST">
+                    <button
+                      type="submit"
+                      class="w-full rounded-lg px-4 py-2.5 text-left text-sm font-medium text-rose-300 transition hover:bg-white/5 hover:text-rose-200"
+                    >
+                      Sign out
+                    </button>
+                  </form>
+                </>
+              ) : (
+                <a
+                  href="/login"
+                  class="block rounded-lg px-4 py-2.5 text-sm font-medium text-emerald-300 transition hover:bg-white/5 hover:text-emerald-200"
+                >
+                  Sign in
+                </a>
+              )
+            }
           </div>
         </div>
       </div>

@@ -5,28 +5,20 @@ import { BasePage } from "./BasePage";
  * Page Object for the Progress/Statistics page
  */
 export class ProgressPage extends BasePage {
-  // Tabs
-  readonly overviewTab: Locator;
-  readonly heatmapTab: Locator;
+  // Tabs (actual tabs: mastery, stats, history)
+  readonly masteryTab: Locator;
+  readonly statsTab: Locator;
   readonly historyTab: Locator;
 
-  // Overview stats
+  // Mastery tab
+  readonly masteryContainer: Locator;
+
+  // Stats tab
   readonly totalQuizzes: Locator;
-  readonly averageScore: Locator;
-  readonly bestScore: Locator;
+  readonly practiceTime: Locator;
+  readonly currentStreak: Locator;
   readonly byQuizTypeStats: Locator;
   readonly byDifficultyStats: Locator;
-
-  // Heatmap
-  readonly heatmapFretboard: Locator;
-  readonly heatmapLegend: Locator;
-  readonly errorHotspots: Locator;
-
-  // Filters
-  readonly quizTypeFilter: Locator;
-  readonly dateRangeFilter: Locator;
-  readonly fromDateInput: Locator;
-  readonly toDateInput: Locator;
 
   // Session history
   readonly sessionHistoryList: Locator;
@@ -41,28 +33,20 @@ export class ProgressPage extends BasePage {
   constructor(page: Page) {
     super(page);
 
-    // Tabs - using data-testid
-    this.overviewTab = page.getByTestId("progress-tab-stats");
-    this.heatmapTab = page.getByTestId("progress-tab-heatmap");
+    // Tabs - using data-testid (actual tabs: mastery, stats, history)
+    this.masteryTab = page.getByTestId("progress-tab-mastery");
+    this.statsTab = page.getByTestId("progress-tab-stats");
     this.historyTab = page.getByTestId("progress-tab-history");
 
-    // Overview - using data-testid
+    // Mastery tab content
+    this.masteryContainer = page.getByTestId("progress-mastery-container");
+
+    // Stats tab - using data-testid
     this.totalQuizzes = page.getByTestId("progress-total-quizzes");
-    this.averageScore = page.getByTestId("progress-practice-time");
-    this.bestScore = page.getByTestId("progress-current-streak");
+    this.practiceTime = page.getByTestId("progress-practice-time");
+    this.currentStreak = page.getByTestId("progress-current-streak");
     this.byQuizTypeStats = page.getByTestId("progress-stats-by-quiz-type");
     this.byDifficultyStats = page.getByTestId("progress-stats-by-difficulty");
-
-    // Heatmap - using data-testid
-    this.heatmapFretboard = page.getByTestId("progress-heatmap-container");
-    this.heatmapLegend = page.locator("div").filter({ hasText: /errors$/ }).first();
-    this.errorHotspots = page.locator("div.rounded-lg.border.group");
-
-    // Filters - using data-testid
-    this.quizTypeFilter = page.getByTestId("progress-heatmap-quiz-type-select");
-    this.dateRangeFilter = page.getByTestId("progress-heatmap-date-range-select");
-    this.fromDateInput = page.getByLabel(/from date/i);
-    this.toDateInput = page.getByLabel(/to date/i);
 
     // History - using data-testid
     this.sessionHistoryList = page.getByTestId("progress-history-table");
@@ -80,42 +64,26 @@ export class ProgressPage extends BasePage {
     await this.waitForPageLoad();
   }
 
-  async switchToOverviewTab(): Promise<void> {
-    await this.overviewTab.click();
+  async switchToMasteryTab(): Promise<void> {
+    await this.masteryTab.click();
   }
 
-  async switchToHeatmapTab(): Promise<void> {
-    await this.heatmapTab.click();
+  async switchToStatsTab(): Promise<void> {
+    await this.statsTab.click();
   }
 
   async switchToHistoryTab(): Promise<void> {
     await this.historyTab.click();
   }
 
-  async filterByQuizType(quizType: string): Promise<void> {
-    // Use selectOption for select element
-    await this.quizTypeFilter.selectOption({ value: quizType });
-  }
-
-  async filterByDateRange(range: string): Promise<void> {
-    // Use selectOption for the date range dropdown
-    await this.dateRangeFilter.selectOption({ value: range });
-  }
-
   async getTotalQuizzes(): Promise<number> {
     // Make sure we're on the stats tab
     if (!(await this.totalQuizzes.isVisible({ timeout: 1000 }).catch(() => false))) {
-      await this.switchToOverviewTab();
+      await this.switchToStatsTab();
     }
     const text = await this.page.getByTestId("progress-total-quizzes-value").textContent();
     const match = text?.match(/(\d+)/);
     return match ? parseInt(match[1], 10) : 0;
-  }
-
-  async getAverageScore(): Promise<number> {
-    const text = await this.averageScore.textContent();
-    const match = text?.match(/(\d+\.?\d*)/);
-    return match ? parseFloat(match[1]) : 0;
   }
 
   async getSessionCount(): Promise<number> {
@@ -132,9 +100,5 @@ export class ProgressPage extends BasePage {
 
   async isEmptyState(): Promise<boolean> {
     return this.emptyStateMessage.isVisible();
-  }
-
-  async getErrorHotspotsCount(): Promise<number> {
-    return this.errorHotspots.count();
   }
 }

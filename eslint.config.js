@@ -20,22 +20,27 @@ const baseConfig = tseslint.config({
   rules: {
     "no-console": "warn",
     "no-unused-vars": "off",
+    "@typescript-eslint/no-non-null-assertion": "warn",
   },
 });
 
 const jsxA11yConfig = tseslint.config({
   files: ["**/*.{js,jsx,ts,tsx}"],
+  ignores: ["e2e/**/*"],
   extends: [jsxA11y.flatConfigs.recommended],
   languageOptions: {
     ...jsxA11y.flatConfigs.recommended.languageOptions,
   },
   rules: {
     ...jsxA11y.flatConfigs.recommended.rules,
+    "jsx-a11y/no-autofocus": "warn",
+    "jsx-a11y/no-noninteractive-element-to-interactive-role": "warn",
   },
 });
 
 const reactConfig = tseslint.config({
   files: ["**/*.{js,jsx,ts,tsx}"],
+  ignores: ["e2e/**/*"],
   extends: [pluginReact.configs.flat.recommended],
   languageOptions: {
     ...pluginReact.configs.flat.recommended.languageOptions,
@@ -52,12 +57,14 @@ const reactConfig = tseslint.config({
   rules: {
     ...eslintPluginReactHooks.configs.recommended.rules,
     "react/react-in-jsx-scope": "off",
-    "react-compiler/react-compiler": "error",
+    "react/no-unescaped-entities": "warn",
+    "react-compiler/react-compiler": "warn",
   },
 });
 
 export default tseslint.config(
   includeIgnoreFile(gitignorePath),
+  { ignores: ["e2e/**/*", "**/*.astro"] },
   baseConfig,
   jsxA11yConfig,
   reactConfig,

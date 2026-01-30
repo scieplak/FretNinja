@@ -60,15 +60,17 @@ export class DashboardPage extends BasePage {
     await this.page.goto("/dashboard");
     await this.waitForPageLoad();
     // Wait for stats to load (value changes from "…" to actual number)
-    await this.page.waitForFunction(
-      () => {
-        const statsEl = document.querySelector('[data-testid="dashboard-stat-0"] p.text-xl');
-        return statsEl && !statsEl.textContent?.includes("…");
-      },
-      { timeout: 10000 }
-    ).catch(() => {
-      // Stats may already be loaded or user is guest
-    });
+    await this.page
+      .waitForFunction(
+        () => {
+          const statsEl = document.querySelector('[data-testid="dashboard-stat-0"] p.text-xl');
+          return statsEl && !statsEl.textContent?.includes("…");
+        },
+        { timeout: 10000 }
+      )
+      .catch(() => {
+        // Stats may already be loaded or user is guest
+      });
   }
 
   async getTotalQuizzes(): Promise<number> {

@@ -5,10 +5,10 @@ import type { ApiErrorDTO, RegisterCommand, RegisterResponseDTO } from "@/types"
 
 const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
-type PasswordStrength = {
+interface PasswordStrength {
   label: "Weak" | "Fair" | "Strong";
   percent: number;
-};
+}
 
 const getPasswordStrength = (value: string): PasswordStrength => {
   const lengthScore = value.length >= 12 ? 2 : value.length >= 8 ? 1 : 0;
@@ -107,7 +107,7 @@ const RegisterForm = () => {
         setTimeout(() => {
           window.location.href = "/dashboard";
         }, 1200);
-      } catch (error) {
+      } catch {
         setApiError("Network error. Please check your connection and try again.");
       } finally {
         setIsSubmitting(false);
@@ -188,13 +188,23 @@ const RegisterForm = () => {
       </div>
 
       {apiError ? (
-        <div role="alert" aria-live="polite" data-testid="register-error" className="rounded-lg border border-rose-500/40 bg-rose-500/10 px-4 py-3 text-sm text-rose-200">
+        <div
+          role="alert"
+          aria-live="polite"
+          data-testid="register-error"
+          className="rounded-lg border border-rose-500/40 bg-rose-500/10 px-4 py-3 text-sm text-rose-200"
+        >
           {apiError}
         </div>
       ) : null}
 
       {successMessage ? (
-        <div role="status" aria-live="polite" data-testid="register-success" className="rounded-lg border border-emerald-400/40 bg-emerald-400/10 px-4 py-3 text-sm text-emerald-100">
+        <div
+          role="status"
+          aria-live="polite"
+          data-testid="register-success"
+          className="rounded-lg border border-emerald-400/40 bg-emerald-400/10 px-4 py-3 text-sm text-emerald-100"
+        >
           {successMessage}
         </div>
       ) : null}

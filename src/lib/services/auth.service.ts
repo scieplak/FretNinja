@@ -1,5 +1,5 @@
-import type { SupabaseClient } from '@supabase/supabase-js';
-import type { Database } from '../../db/database.types';
+import type { SupabaseClient } from "@supabase/supabase-js";
+import type { Database } from "../../db/database.types";
 import type {
   RegisterCommand,
   RegisterResponseDTO,
@@ -11,7 +11,7 @@ import type {
   PasswordUpdateCommand,
   PasswordUpdateResponseDTO,
   ApiErrorDTO,
-} from '../../types';
+} from "../../types";
 
 type SupabaseClientType = SupabaseClient<Database>;
 
@@ -37,7 +37,7 @@ export class AuthService {
       return {
         error: {
           status: 500,
-          body: { code: 'SERVER_ERROR', message: 'Registration failed' },
+          body: { code: "SERVER_ERROR", message: "Registration failed" },
         },
       };
     }
@@ -48,7 +48,7 @@ export class AuthService {
           id: data.user.id,
           email: data.user.email!,
         },
-        message: 'Registration successful. Please check your email for confirmation.',
+        message: "Registration successful. Please check your email for confirmation.",
       },
     };
   }
@@ -67,7 +67,7 @@ export class AuthService {
       return {
         error: {
           status: 500,
-          body: { code: 'SERVER_ERROR', message: 'Login failed' },
+          body: { code: "SERVER_ERROR", message: "Login failed" },
         },
       };
     }
@@ -96,7 +96,7 @@ export class AuthService {
 
     return {
       data: {
-        message: 'Logged out successfully',
+        message: "Logged out successfully",
       },
     };
   }
@@ -119,7 +119,7 @@ export class AuthService {
 
     return {
       data: {
-        message: 'If an account exists with this email, a password reset link has been sent.',
+        message: "If an account exists with this email, a password reset link has been sent.",
       },
     };
   }
@@ -135,69 +135,69 @@ export class AuthService {
 
     return {
       data: {
-        message: 'Password updated successfully',
+        message: "Password updated successfully",
       },
     };
   }
 
   private mapRegisterError(error: Error): { status: number; body: ApiErrorDTO } {
-    if (error.message.includes('User already registered')) {
+    if (error.message.includes("User already registered")) {
       return {
         status: 409,
-        body: { code: 'EMAIL_EXISTS', message: 'An account with this email already exists' },
+        body: { code: "EMAIL_EXISTS", message: "An account with this email already exists" },
       };
     }
 
-    console.error('Registration error:', error.message);
+    console.error("Registration error:", error.message);
     return {
       status: 500,
-      body: { code: 'SERVER_ERROR', message: 'Registration failed' },
+      body: { code: "SERVER_ERROR", message: "Registration failed" },
     };
   }
 
   private mapLoginError(error: Error): { status: number; body: ApiErrorDTO } {
-    if (error.message.includes('Invalid login credentials') || error.message.includes('Email not confirmed')) {
+    if (error.message.includes("Invalid login credentials") || error.message.includes("Email not confirmed")) {
       return {
         status: 401,
-        body: { code: 'INVALID_CREDENTIALS', message: 'Invalid email or password' },
+        body: { code: "INVALID_CREDENTIALS", message: "Invalid email or password" },
       };
     }
 
-    console.error('Login error:', error.message);
+    console.error("Login error:", error.message);
     return {
       status: 500,
-      body: { code: 'SERVER_ERROR', message: 'Login failed' },
+      body: { code: "SERVER_ERROR", message: "Login failed" },
     };
   }
 
   private mapLogoutError(error: Error): { status: number; body: ApiErrorDTO } {
-    if (error.message.includes('session') || error.message.includes('token') || error.message.includes('JWT')) {
+    if (error.message.includes("session") || error.message.includes("token") || error.message.includes("JWT")) {
       return {
         status: 401,
-        body: { code: 'UNAUTHORIZED', message: 'No active session' },
+        body: { code: "UNAUTHORIZED", message: "No active session" },
       };
     }
 
-    console.error('Logout error:', error.message);
+    console.error("Logout error:", error.message);
     return {
       status: 500,
-      body: { code: 'SERVER_ERROR', message: 'Logout failed' },
+      body: { code: "SERVER_ERROR", message: "Logout failed" },
     };
   }
 
   private handlePasswordResetError(error: Error): { status: number; body: ApiErrorDTO } | null {
-    console.error('Password reset error:', error.message);
+    console.error("Password reset error:", error.message);
 
     // Only expose actual server errors
     if (
-      error.message.includes('rate') ||
-      error.message.includes('limit') ||
-      error.message.includes('server') ||
-      error.message.includes('network')
+      error.message.includes("rate") ||
+      error.message.includes("limit") ||
+      error.message.includes("server") ||
+      error.message.includes("network")
     ) {
       return {
         status: 500,
-        body: { code: 'SERVER_ERROR', message: 'Password reset request failed' },
+        body: { code: "SERVER_ERROR", message: "Password reset request failed" },
       };
     }
 
@@ -210,30 +210,30 @@ export class AuthService {
 
     // Token expired or invalid
     if (
-      message.includes('expired') ||
-      message.includes('invalid') ||
-      message.includes('token') ||
-      message.includes('jwt') ||
-      message.includes('session')
+      message.includes("expired") ||
+      message.includes("invalid") ||
+      message.includes("token") ||
+      message.includes("jwt") ||
+      message.includes("session")
     ) {
       return {
         status: 401,
-        body: { code: 'INVALID_TOKEN', message: 'Invalid or expired reset token' },
+        body: { code: "INVALID_TOKEN", message: "Invalid or expired reset token" },
       };
     }
 
     // Password requirements
-    if (message.includes('password')) {
+    if (message.includes("password")) {
       return {
         status: 400,
-        body: { code: 'VALIDATION_ERROR', message: 'Password must be at least 8 characters' },
+        body: { code: "VALIDATION_ERROR", message: "Password must be at least 8 characters" },
       };
     }
 
-    console.error('Password update error:', error.message);
+    console.error("Password update error:", error.message);
     return {
       status: 500,
-      body: { code: 'SERVER_ERROR', message: 'Password update failed' },
+      body: { code: "SERVER_ERROR", message: "Password update failed" },
     };
   }
 }

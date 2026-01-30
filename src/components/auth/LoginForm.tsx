@@ -98,8 +98,7 @@ const LoginForm = ({ redirectTo }: LoginFormProps) => {
 
         if (data?.user) {
           // Determine redirect URL - validate if provided, default to dashboard
-          const targetUrl =
-            redirectTo && isValidRedirectUrl(redirectTo) ? redirectTo : "/dashboard";
+          const targetUrl = redirectTo && isValidRedirectUrl(redirectTo) ? redirectTo : "/dashboard";
           window.location.href = targetUrl;
         } else {
           setApiError("Login failed. Please try again.");
@@ -187,9 +186,7 @@ const LoginForm = ({ redirectTo }: LoginFormProps) => {
         {isSubmitting ? "Signing in..." : "Sign in"}
       </button>
 
-      <p className="text-center text-xs text-slate-400">
-        Secure login uses encrypted sessions managed by the server.
-      </p>
+      <p className="text-center text-xs text-slate-400">Secure login uses encrypted sessions managed by the server.</p>
     </form>
   );
 };

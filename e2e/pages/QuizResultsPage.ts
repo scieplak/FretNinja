@@ -40,7 +40,9 @@ export class QuizResultsPage extends BasePage {
 
     // Question breakdown
     this.breakdownSection = page.getByTestId("quiz-results-breakdown");
-    this.missedQuestions = page.getByTestId("quiz-results-missed-questions").locator("div[data-testid^='quiz-results-missed-']");
+    this.missedQuestions = page
+      .getByTestId("quiz-results-missed-questions")
+      .locator("div[data-testid^='quiz-results-missed-']");
 
     // Action links
     this.retryButton = page.getByTestId("quiz-results-retry-button");

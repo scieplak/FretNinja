@@ -233,9 +233,7 @@ const SettingsView = ({ user }: SettingsViewProps) => {
         <h2 className="text-lg font-semibold text-white">About</h2>
         <div className="mt-4 space-y-2 text-sm text-slate-300">
           <p>Version 0.1.0 · Astro 5 · React 19</p>
-          <p className="text-xs text-slate-400">
-            Built for fretboard learning with dark-mode performance focus.
-          </p>
+          <p className="text-xs text-slate-400">Built for fretboard learning with dark-mode performance focus.</p>
           <a href="https://github.com/scieplak/FretNinja/issues" className="text-emerald-200 hover:text-emerald-100">
             Support & feedback
           </a>

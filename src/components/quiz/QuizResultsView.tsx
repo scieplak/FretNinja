@@ -5,7 +5,7 @@ interface QuizResultsViewProps {
   user: { id: string; email: string } | null;
 }
 
-type ResultsPayload = {
+interface ResultsPayload {
   mode: string;
   difficulty: string;
   score: number;
@@ -19,7 +19,7 @@ type ResultsPayload = {
     isCorrect: boolean;
   }[];
   achievements?: { id: string; display_name: string }[];
-};
+}
 
 const scoreMessage = (score: number, total: number) => {
   const ratio = score / total;
@@ -65,22 +65,30 @@ const QuizResultsView = ({ mode, user }: QuizResultsViewProps) => {
         <h1 className="text-2xl font-semibold text-white" data-testid="quiz-results-score">
           {results.score}/{results.total} · {Math.round((results.score / results.total) * 100)}%
         </h1>
-        <p className="text-sm text-slate-300" data-testid="quiz-results-message">{scoreMessage(results.score, results.total)}</p>
+        <p className="text-sm text-slate-300" data-testid="quiz-results-message">
+          {scoreMessage(results.score, results.total)}
+        </p>
       </header>
 
       <section className="rounded-2xl border border-white/10 bg-white/5 p-6" data-testid="quiz-results-summary">
         <div className="flex flex-wrap items-center justify-between gap-4 text-sm text-slate-300">
           <div>
             <p className="text-xs uppercase tracking-[0.2em] text-slate-400">Mode</p>
-            <p className="text-white" data-testid="quiz-results-mode">{mode.replace("-", " ")}</p>
+            <p className="text-white" data-testid="quiz-results-mode">
+              {mode.replace("-", " ")}
+            </p>
           </div>
           <div>
             <p className="text-xs uppercase tracking-[0.2em] text-slate-400">Difficulty</p>
-            <p className="text-white" data-testid="quiz-results-difficulty">{results.difficulty}</p>
+            <p className="text-white" data-testid="quiz-results-difficulty">
+              {results.difficulty}
+            </p>
           </div>
           <div>
             <p className="text-xs uppercase tracking-[0.2em] text-slate-400">Time taken</p>
-            <p className="text-white" data-testid="quiz-results-time">{formatTime(results.timeTakenSeconds)}</p>
+            <p className="text-white" data-testid="quiz-results-time">
+              {formatTime(results.timeTakenSeconds)}
+            </p>
           </div>
         </div>
       </section>
@@ -92,7 +100,11 @@ const QuizResultsView = ({ mode, user }: QuizResultsViewProps) => {
             <p data-testid="quiz-results-perfect">You nailed every question. Nice work!</p>
           ) : (
             missedQuestions.map((answer) => (
-              <div key={answer.questionNumber} className="rounded-lg border border-white/10 bg-slate-950/60 px-4 py-3" data-testid={`quiz-results-missed-${answer.questionNumber}`}>
+              <div
+                key={answer.questionNumber}
+                className="rounded-lg border border-white/10 bg-slate-950/60 px-4 py-3"
+                data-testid={`quiz-results-missed-${answer.questionNumber}`}
+              >
                 <p className="text-white">Question {answer.questionNumber}</p>
                 <p className="text-xs text-slate-400">{answer.prompt}</p>
                 <p className="mt-2">Your answer: {answer.userAnswer || "—"}</p>
@@ -104,7 +116,10 @@ const QuizResultsView = ({ mode, user }: QuizResultsViewProps) => {
       </section>
 
       {results.achievements && results.achievements.length > 0 ? (
-        <section className="rounded-2xl border border-emerald-400/30 bg-emerald-400/10 p-6" data-testid="quiz-results-achievements">
+        <section
+          className="rounded-2xl border border-emerald-400/30 bg-emerald-400/10 p-6"
+          data-testid="quiz-results-achievements"
+        >
           <h2 className="text-lg font-semibold text-white">Achievements earned</h2>
           <div className="mt-3 flex flex-wrap gap-3" data-testid="quiz-results-achievement-list">
             {results.achievements.map((achievement) => (
@@ -128,18 +143,33 @@ const QuizResultsView = ({ mode, user }: QuizResultsViewProps) => {
         >
           Retry same quiz
         </a>
-        <a href="/quiz" data-testid="quiz-results-different-mode-link" className="text-sm text-slate-300 hover:text-emerald-200">
+        <a
+          href="/quiz"
+          data-testid="quiz-results-different-mode-link"
+          className="text-sm text-slate-300 hover:text-emerald-200"
+        >
           Try different mode
         </a>
-        <a href="/dashboard" data-testid="quiz-results-dashboard-link" className="text-sm text-slate-300 hover:text-emerald-200">
+        <a
+          href="/dashboard"
+          data-testid="quiz-results-dashboard-link"
+          className="text-sm text-slate-300 hover:text-emerald-200"
+        >
           Back to dashboard
         </a>
       </section>
 
       {isGuest ? (
-        <div className="rounded-2xl border border-emerald-400/30 bg-emerald-400/10 px-6 py-4 text-sm text-emerald-100" data-testid="quiz-results-guest-prompt">
+        <div
+          className="rounded-2xl border border-emerald-400/30 bg-emerald-400/10 px-6 py-4 text-sm text-emerald-100"
+          data-testid="quiz-results-guest-prompt"
+        >
           Create an account to save your progress and unlock achievements.
-          <a href="/register" data-testid="quiz-results-register-link" className="ml-2 font-semibold text-white hover:text-emerald-200">
+          <a
+            href="/register"
+            data-testid="quiz-results-register-link"
+            className="ml-2 font-semibold text-white hover:text-emerald-200"
+          >
             Register now
           </a>
         </div>

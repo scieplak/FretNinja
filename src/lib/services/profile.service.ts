@@ -1,6 +1,6 @@
-import type { SupabaseClient } from '@supabase/supabase-js';
-import type { Database } from '../../db/database.types';
-import type { ProfileDTO, UpdateProfileCommand, ApiErrorDTO } from '../../types';
+import type { SupabaseClient } from "@supabase/supabase-js";
+import type { Database } from "../../db/database.types";
+import type { ProfileDTO, UpdateProfileCommand, ApiErrorDTO } from "../../types";
 
 type SupabaseClientType = SupabaseClient<Database>;
 
@@ -13,23 +13,23 @@ export class ProfileService {
   constructor(private supabase: SupabaseClientType) {}
 
   async getProfile(userId: string): Promise<ServiceResult<ProfileDTO>> {
-    const { data, error } = await this.supabase.from('profiles').select('*').eq('id', userId).single();
+    const { data, error } = await this.supabase.from("profiles").select("*").eq("id", userId).single();
 
     if (error) {
-      if (error.code === 'PGRST116') {
+      if (error.code === "PGRST116") {
         return {
           error: {
             status: 404,
-            body: { code: 'NOT_FOUND', message: 'Profile not found' },
+            body: { code: "NOT_FOUND", message: "Profile not found" },
           },
         };
       }
 
-      console.error('Failed to fetch profile:', error.message);
+      console.error("Failed to fetch profile:", error.message);
       return {
         error: {
           status: 500,
-          body: { code: 'SERVER_ERROR', message: 'Failed to fetch profile' },
+          body: { code: "SERVER_ERROR", message: "Failed to fetch profile" },
         },
       };
     }
@@ -52,19 +52,14 @@ export class ProfileService {
       return this.getProfile(userId);
     }
 
-    const { data, error } = await this.supabase
-      .from('profiles')
-      .update(updates)
-      .eq('id', userId)
-      .select()
-      .single();
+    const { data, error } = await this.supabase.from("profiles").update(updates).eq("id", userId).select().single();
 
     if (error) {
-      console.error('Failed to update profile:', error.message);
+      console.error("Failed to update profile:", error.message);
       return {
         error: {
           status: 500,
-          body: { code: 'SERVER_ERROR', message: 'Failed to update profile' },
+          body: { code: "SERVER_ERROR", message: "Failed to update profile" },
         },
       };
     }

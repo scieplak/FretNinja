@@ -1,25 +1,26 @@
-import { defineMiddleware } from 'astro:middleware';
+import { defineMiddleware } from "astro:middleware";
 
-import { createSupabaseServerInstance } from '../db/supabase.client';
+import { createSupabaseServerInstance } from "../db/supabase.client";
 
 // Routes that require authentication - hard redirect to login
-const PROTECTED_ROUTES = ['/profile', '/statistics', '/settings'];
-
-// Routes that work for both guests and authenticated users - soft check
-const MIXED_ROUTES = ['/quiz', '/explorer', '/dashboard', '/progress', '/achievements'];
+const PROTECTED_ROUTES = ["/profile", "/statistics", "/settings"];
 
 // Routes that should redirect authenticated users away (e.g., login/register)
-const AUTH_ROUTES = ['/login', '/register', '/reset-password', '/auth/password-update'];
+const AUTH_ROUTES = ["/login", "/register", "/reset-password", "/auth/password-update"];
 
 // Public routes that don't need any auth check
-const PUBLIC_ROUTES = ['/', '/api/auth/login', '/api/auth/register', '/api/auth/logout', '/api/auth/password-reset', '/api/auth/password-update', '/auth/callback'];
+const PUBLIC_ROUTES = [
+  "/",
+  "/api/auth/login",
+  "/api/auth/register",
+  "/api/auth/logout",
+  "/api/auth/password-reset",
+  "/api/auth/password-update",
+  "/auth/callback",
+];
 
 function isProtectedRoute(pathname: string): boolean {
   return PROTECTED_ROUTES.some((route) => pathname === route || pathname.startsWith(`${route}/`));
-}
-
-function isMixedRoute(pathname: string): boolean {
-  return MIXED_ROUTES.some((route) => pathname === route || pathname.startsWith(`${route}/`));
 }
 
 function isAuthRoute(pathname: string): boolean {
@@ -58,7 +59,7 @@ export const onRequest = defineMiddleware(async (context, next) => {
   if (user) {
     context.locals.user = {
       id: user.id,
-      email: user.email ?? '',
+      email: user.email ?? "",
     };
   }
 
@@ -73,7 +74,7 @@ export const onRequest = defineMiddleware(async (context, next) => {
   // Handle auth routes - redirect authenticated users to dashboard
   if (isAuthRoute(pathname)) {
     if (user) {
-      return redirect('/dashboard');
+      return redirect("/dashboard");
     }
   }
 

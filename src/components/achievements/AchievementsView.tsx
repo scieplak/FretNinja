@@ -116,19 +116,27 @@ const AchievementsView = ({ user }: AchievementsViewProps) => {
     <div className="space-y-8" data-testid="achievements-view">
       <header className="space-y-2">
         <p className="text-xs font-semibold uppercase tracking-[0.3em] text-emerald-300">Achievements</p>
-        <h1 className="text-2xl font-semibold text-white" data-testid="achievements-heading">Your milestones</h1>
+        <h1 className="text-2xl font-semibold text-white" data-testid="achievements-heading">
+          Your milestones
+        </h1>
         <p className="text-sm text-slate-300">Earn badges by hitting practice goals and streaks.</p>
       </header>
 
       {errorMessage ? (
-        <div className="rounded-2xl border border-rose-500/40 bg-rose-500/10 px-6 py-4 text-sm text-rose-200" data-testid="achievements-error-message">
+        <div
+          className="rounded-2xl border border-rose-500/40 bg-rose-500/10 px-6 py-4 text-sm text-rose-200"
+          data-testid="achievements-error-message"
+        >
           {errorMessage}
         </div>
       ) : null}
 
       <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3" data-testid="achievements-grid">
         {isLoading ? (
-          <div className="rounded-2xl border border-white/10 bg-white/5 p-6 text-sm text-slate-300" data-testid="achievements-loading">
+          <div
+            className="rounded-2xl border border-white/10 bg-white/5 p-6 text-sm text-slate-300"
+            data-testid="achievements-loading"
+          >
             Loading achievements...
           </div>
         ) : (
@@ -143,19 +151,34 @@ const AchievementsView = ({ user }: AchievementsViewProps) => {
                   : "border-white/10 bg-white/5"
               }`}
             >
-              <h2 className="text-lg font-semibold text-white" data-testid={`achievement-name-${card.id}`}>{card.displayName}</h2>
-              <p className="mt-2 text-sm text-slate-300" data-testid={`achievement-description-${card.id}`}>{card.description}</p>
+              <h2 className="text-lg font-semibold text-white" data-testid={`achievement-name-${card.id}`}>
+                {card.displayName}
+              </h2>
+              <p className="mt-2 text-sm text-slate-300" data-testid={`achievement-description-${card.id}`}>
+                {card.description}
+              </p>
 
               {card.status === "earned" ? (
-                <div className="mt-4 flex items-center justify-between text-xs text-emerald-200" data-testid={`achievement-earned-info-${card.id}`}>
-                  <span data-testid={`achievement-earned-date-${card.id}`}>Earned on {new Date(card.earnedAt!).toDateString()}</span>
+                <div
+                  className="mt-4 flex items-center justify-between text-xs text-emerald-200"
+                  data-testid={`achievement-earned-info-${card.id}`}
+                >
+                  <span data-testid={`achievement-earned-date-${card.id}`}>
+                    Earned on {new Date(card.earnedAt!).toDateString()}
+                  </span>
                   <div className="flex items-center gap-2">
                     {isRecentlyEarned(card.earnedAt) ? (
-                      <span className="rounded-full border border-emerald-400/70 bg-emerald-400/30 px-2 py-1 text-[0.6rem] uppercase tracking-[0.2em] animate-pulse" data-testid={`achievement-new-badge-${card.id}`}>
+                      <span
+                        className="rounded-full border border-emerald-400/70 bg-emerald-400/30 px-2 py-1 text-[0.6rem] uppercase tracking-[0.2em] animate-pulse"
+                        data-testid={`achievement-new-badge-${card.id}`}
+                      >
                         New
                       </span>
                     ) : null}
-                    <span className="rounded-full border border-emerald-400/50 bg-emerald-400/20 px-2 py-1 text-[0.6rem] uppercase tracking-[0.2em]" data-testid={`achievement-earned-badge-${card.id}`}>
+                    <span
+                      className="rounded-full border border-emerald-400/50 bg-emerald-400/20 px-2 py-1 text-[0.6rem] uppercase tracking-[0.2em]"
+                      data-testid={`achievement-earned-badge-${card.id}`}
+                    >
                       Earned
                     </span>
                   </div>
@@ -164,7 +187,14 @@ const AchievementsView = ({ user }: AchievementsViewProps) => {
 
               {card.status === "progress" ? (
                 <div className="mt-4" data-testid={`achievement-progress-${card.id}`}>
-                  <div className="h-2 w-full overflow-hidden rounded-full bg-slate-800" role="progressbar" aria-valuenow={card.progress?.percentage ?? 0} aria-valuemin={0} aria-valuemax={100} data-testid={`achievement-progress-bar-${card.id}`}>
+                  <div
+                    className="h-2 w-full overflow-hidden rounded-full bg-slate-800"
+                    role="progressbar"
+                    aria-valuenow={card.progress?.percentage ?? 0}
+                    aria-valuemin={0}
+                    aria-valuemax={100}
+                    data-testid={`achievement-progress-bar-${card.id}`}
+                  >
                     <div
                       className="h-full rounded-full bg-emerald-400"
                       style={{ width: `${card.progress?.percentage ?? 0}%` }}
@@ -177,7 +207,9 @@ const AchievementsView = ({ user }: AchievementsViewProps) => {
               ) : null}
 
               {card.status === "locked" ? (
-                <p className="mt-4 text-xs text-slate-500" data-testid={`achievement-locked-${card.id}`}>Locked · Keep practicing to unlock</p>
+                <p className="mt-4 text-xs text-slate-500" data-testid={`achievement-locked-${card.id}`}>
+                  Locked · Keep practicing to unlock
+                </p>
               ) : null}
             </div>
           ))

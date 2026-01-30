@@ -134,11 +134,13 @@ export class QuizActivePage extends BasePage {
     return "incorrect";
   }
 
-  async getHighlightedPositions(): Promise<Array<{ fret: number; string: number }>> {
-    // Look for buttons with amber/highlight styling (pulse animation)
-    const highlighted = this.page.locator("[data-testid^='fretboard-position-'][class*='animate-pulse'], [data-testid^='fretboard-position-'][class*='amber']");
+  async getHighlightedPositions(): Promise<{ fret: number; string: number }[]> {
+    // Look for buttons with emerald styling (highlighted notes in quiz)
+    const highlighted = this.page.locator(
+      "[data-testid^='fretboard-position-'][class*='emerald']"
+    );
     const count = await highlighted.count();
-    const positions: Array<{ fret: number; string: number }> = [];
+    const positions: { fret: number; string: number }[] = [];
 
     for (let i = 0; i < count; i++) {
       const el = highlighted.nth(i);

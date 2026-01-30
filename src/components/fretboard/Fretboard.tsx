@@ -2,11 +2,11 @@ import { useMemo } from "react";
 
 import type { NoteEnum } from "@/types";
 
-export type FretPosition = {
+export interface FretPosition {
   string: number;
   fret: number;
   note: NoteEnum;
-};
+}
 
 const NOTES: NoteEnum[] = ["C", "C#", "D", "D#", "E", "F", "F#", "G", "G#", "A", "A#", "B"];
 const STRING_OPEN_NOTES: Record<number, NoteEnum> = {
@@ -37,10 +37,11 @@ export const getFretboardPositions = (fretRange: number): FretPosition[] => {
 const SINGLE_MARKERS = [3, 5, 7, 9, 15, 17, 19, 21];
 const DOUBLE_MARKERS = [12, 24];
 
-type FretboardProps = {
+interface FretboardProps {
   fretRange?: number;
   showNoteNames?: boolean;
   hideHighlightedNames?: boolean; // Hide note names on highlighted positions (for "name the note" quiz)
+  hideSelectedNames?: boolean; // Hide note names on selected positions (for "mark the chord" quiz)
   highlightedPositions?: FretPosition[];
   rootPositions?: FretPosition[]; // Root notes get special styling (purple) in explorer mode
   selectedPositions?: FretPosition[];
@@ -48,12 +49,13 @@ type FretboardProps = {
   incorrectPositions?: FretPosition[];
   disabled?: boolean;
   onPositionClick?: (position: FretPosition) => void;
-};
+}
 
 const Fretboard = ({
   fretRange = 12,
   showNoteNames = false,
   hideHighlightedNames = false,
+  hideSelectedNames = false,
   highlightedPositions = [],
   rootPositions = [],
   selectedPositions = [],
@@ -84,16 +86,16 @@ const Fretboard = ({
     [incorrectPositions]
   );
 
-  const rootSet = useMemo(
-    () => new Set(rootPositions.map((pos) => `${pos.string}-${pos.fret}`)),
-    [rootPositions]
-  );
+  const rootSet = useMemo(() => new Set(rootPositions.map((pos) => `${pos.string}-${pos.fret}`)), [rootPositions]);
 
   const frets = Array.from({ length: fretRange + 1 }, (_, index) => index);
   const strings = [1, 2, 3, 4, 5, 6]; // High E to Low E (top to bottom, like tablature)
 
   return (
-    <div className="rounded-2xl border border-white/10 bg-gradient-to-b from-amber-950/40 to-amber-900/20 p-4 overflow-x-auto" data-testid="fretboard">
+    <div
+      className="rounded-2xl border border-white/10 bg-gradient-to-b from-amber-950/40 to-amber-900/20 p-4 overflow-x-auto"
+      data-testid="fretboard"
+    >
       {/* Fret numbers */}
       <div className="flex mb-1 ml-12">
         {frets.map((fret) => (
@@ -110,7 +112,6 @@ const Fretboard = ({
 
       {/* Fretboard body */}
       <div className="relative">
-
         {/* Fret markers (dots) */}
         <div className="absolute left-12 right-0 top-0 bottom-0 flex pointer-events-none">
           {frets.map((fret) => {
@@ -119,9 +120,7 @@ const Fretboard = ({
             const isDouble = DOUBLE_MARKERS.includes(fret);
             return (
               <div key={`marker-${fret}`} className="flex-1 min-w-[40px] flex items-center justify-center">
-                {isSingle && (
-                  <div className="w-3 h-3 rounded-full bg-slate-600/50" />
-                )}
+                {isSingle && <div className="w-3 h-3 rounded-full bg-slate-600/50" />}
                 {isDouble && (
                   <div className="flex flex-col gap-8">
                     <div className="w-3 h-3 rounded-full bg-slate-600/50" />
@@ -155,16 +154,20 @@ const Fretboard = ({
               {/* Fret positions */}
               <div className="flex flex-1 relative z-[2]">
                 {frets.map((fret) => {
-                  const position = positions.find(
-                    (pos) => pos.string === stringNumber && pos.fret === fret
-                  )!;
+                  const position = positions.find((pos) => pos.string === stringNumber && pos.fret === fret)!;
                   const key = `${position.string}-${position.fret}`;
                   const isHighlighted = highlightedSet.has(key);
                   const isRoot = rootSet.has(key);
                   const isSelected = selectedSet.has(key);
                   const isCorrect = correctSet.has(key);
                   const isIncorrect = incorrectSet.has(key);
-                  const showNote = showNoteNames || isSelected || (isHighlighted && !hideHighlightedNames) || isRoot || isCorrect || isIncorrect;
+                  const showNote =
+                    showNoteNames ||
+                    (isSelected && !hideSelectedNames) ||
+                    (isHighlighted && !hideHighlightedNames) ||
+                    isRoot ||
+                    isCorrect ||
+                    isIncorrect;
 
                   return (
                     <div
@@ -179,9 +182,7 @@ const Fretboard = ({
                       )}
 
                       {/* Fret bar (vertical line) - on frets 1+ */}
-                      {fret > 0 && (
-                        <div className="absolute right-0 top-0 bottom-0 w-[2px] bg-slate-500/60" />
-                      )}
+                      {fret > 0 && <div className="absolute right-0 top-0 bottom-0 w-[2px] bg-slate-500/60" />}
 
                       {/* Clickable note position */}
                       <button

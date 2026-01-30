@@ -1,10 +1,10 @@
 import { useCallback, useId, useState } from "react";
 
-type QuizMode = {
+interface QuizMode {
   id: "find-note" | "name-note" | "mark-chord" | "recognize-interval";
   title: string;
   description: string;
-};
+}
 
 type Difficulty = "easy" | "medium" | "hard";
 
