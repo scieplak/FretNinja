@@ -486,6 +486,9 @@ export interface StatsOverviewDTO {
 /** Context type for AI hint requests */
 export type AIHintContextEnum = "quiz" | "explorer";
 
+/** Scale types available in explorer mode */
+export type ScaleTypeEnum = "major" | "natural_minor" | "pentatonic_major" | "pentatonic_minor";
+
 /**
  * Command to request an AI hint.
  * Fields are conditional based on context and quiz_type.
@@ -497,6 +500,7 @@ export interface AIHintCommand {
   target_interval?: IntervalEnum | null;
   target_chord_type?: ChordTypeEnum | null;
   target_root_note?: NoteEnum | null;
+  target_scale_type?: ScaleTypeEnum | null;
   fret_position?: number | null;
   string_number?: number | null;
   user_error_positions?: FretPositionDTO[] | null;
