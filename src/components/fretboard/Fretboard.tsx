@@ -41,6 +41,7 @@ interface FretboardProps {
   fretRange?: number;
   showNoteNames?: boolean;
   hideHighlightedNames?: boolean; // Hide note names on highlighted positions (for "name the note" quiz)
+  hideSelectedNames?: boolean; // Hide note names on selected positions (for "mark the chord" quiz)
   highlightedPositions?: FretPosition[];
   rootPositions?: FretPosition[]; // Root notes get special styling (purple) in explorer mode
   selectedPositions?: FretPosition[];
@@ -54,6 +55,7 @@ const Fretboard = ({
   fretRange = 12,
   showNoteNames = false,
   hideHighlightedNames = false,
+  hideSelectedNames = false,
   highlightedPositions = [],
   rootPositions = [],
   selectedPositions = [],
@@ -161,7 +163,7 @@ const Fretboard = ({
                   const isIncorrect = incorrectSet.has(key);
                   const showNote =
                     showNoteNames ||
-                    isSelected ||
+                    (isSelected && !hideSelectedNames) ||
                     (isHighlighted && !hideHighlightedNames) ||
                     isRoot ||
                     isCorrect ||

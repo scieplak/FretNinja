@@ -736,6 +736,7 @@ const QuizActiveView = ({ mode, user }: QuizActiveViewProps) => {
           fretRange={getFretRange(difficulty)}
           showNoteNames={false}
           hideHighlightedNames={mode === "name-note"}
+          hideSelectedNames={mode === "mark-chord"}
           highlightedPositions={
             // find-note: no highlights - user must find the note
             // name-note: highlight the position - user identifies the note name
