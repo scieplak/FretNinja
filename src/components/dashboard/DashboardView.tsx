@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 
 import type {
   ProfileDTO,
@@ -7,6 +7,7 @@ import type {
   UserAchievementsDTO,
   NoteMasteryResponseDTO,
   NoteEnum,
+  PersonalizedTipsResponseDTO,
 } from "@/types";
 
 interface DashboardViewProps {
@@ -72,6 +73,11 @@ const DashboardView = ({
   // Only show loading if we're logged in but have no initial data
   const [isLoading, setIsLoading] = useState(!isGuest && !initialProfile);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
+
+  // AI Tips state
+  const [aiTips, setAiTips] = useState<PersonalizedTipsResponseDTO | null>(null);
+  const [aiTipsLoading, setAiTipsLoading] = useState(false);
+  const [aiTipsError, setAiTipsError] = useState<string | null>(null);
 
   useEffect(() => {
     // If guest, no data to load
@@ -152,6 +158,46 @@ const DashboardView = ({
       document.removeEventListener("visibilitychange", handleVisibilityChange);
     };
   }, [isGuest, initialProfile]);
+
+  // Fetch AI tips on demand
+  const fetchAiTips = useCallback(async () => {
+    if (isGuest) return;
+
+    setAiTipsLoading(true);
+    setAiTipsError(null);
+
+    try {
+      const response = await fetch("/api/ai/personalized-tips", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        credentials: "include",
+        body: JSON.stringify({ limit: 3 }),
+      });
+
+      if (response.status === 401) {
+        setAiTipsError("Sign in to access AI tips.");
+        return;
+      }
+
+      if (response.status === 404) {
+        // INSUFFICIENT_DATA - not enough quiz data
+        setAiTipsError("Complete more quizzes to unlock personalized tips.");
+        return;
+      }
+
+      if (!response.ok) {
+        setAiTipsError("Tips unavailable right now. Try again later.");
+        return;
+      }
+
+      const tips = (await response.json()) as PersonalizedTipsResponseDTO;
+      setAiTips(tips);
+    } catch {
+      setAiTipsError("Network error. Please check your connection.");
+    } finally {
+      setAiTipsLoading(false);
+    }
+  }, [isGuest]);
 
   const displayName = useMemo(() => {
     if (data.profile?.display_name) {
@@ -413,15 +459,89 @@ const DashboardView = ({
       </div>
 
       {!data.isGuest ? (
-        <section className="rounded-2xl border border-white/10 bg-white/5 p-6">
-          <h3 className="text-lg font-semibold text-white">AI tips</h3>
-          <p className="mt-2 text-sm text-slate-300">
-            Personalized learning tips are available after a few sessions. Check your progress to see targeted practice
-            areas.
-          </p>
-          <a href="/progress" className="mt-3 inline-flex text-emerald-200 hover:text-emerald-100">
-            Get more tips →
-          </a>
+        <section className="rounded-2xl border border-white/10 bg-white/5 p-6" data-testid="dashboard-ai-tips">
+          <div className="flex items-center justify-between">
+            <h3 className="text-lg font-semibold text-white">AI tips</h3>
+            {!aiTips && !aiTipsLoading && (
+              <button
+                type="button"
+                onClick={fetchAiTips}
+                disabled={aiTipsLoading}
+                className="rounded-lg bg-emerald-400 px-4 py-2 text-sm font-semibold text-slate-900 transition hover:bg-emerald-300 disabled:opacity-50"
+                data-testid="dashboard-get-ai-tips"
+              >
+                {aiTipsLoading ? "Loading..." : "Get AI tips"}
+              </button>
+            )}
+          </div>
+
+          {aiTipsError && (
+            <p className="mt-3 text-sm text-amber-300" data-testid="dashboard-ai-tips-error">
+              {aiTipsError}
+            </p>
+          )}
+
+          {aiTips ? (
+            <div className="mt-4 space-y-4" data-testid="dashboard-ai-tips-content">
+              {aiTips.tips.map((tip, index) => (
+                <div
+                  key={index}
+                  className="rounded-lg border border-emerald-400/20 bg-emerald-400/5 p-4"
+                  data-testid={`dashboard-ai-tip-${index}`}
+                >
+                  <p className="font-semibold text-emerald-200">{tip.focus_area}</p>
+                  <p className="mt-1 text-sm text-slate-300">{tip.observation}</p>
+                  <p className="mt-2 text-sm text-white">{tip.suggestion}</p>
+                  {tip.practice_positions.length > 0 && (
+                    <div className="mt-2 flex flex-wrap gap-2">
+                      {tip.practice_positions.slice(0, 4).map((pos, posIdx) => (
+                        <span
+                          key={posIdx}
+                          className="rounded-full border border-white/20 bg-slate-800 px-2 py-0.5 text-xs text-slate-300"
+                        >
+                          {pos.note} (fret {pos.fret}, string {pos.string})
+                        </span>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              ))}
+
+              {aiTips.overall_recommendation && (
+                <div className="rounded-lg border border-purple-400/20 bg-purple-400/5 p-4">
+                  <p className="text-sm font-semibold text-purple-200">Overall recommendation</p>
+                  <p className="mt-1 text-sm text-slate-300">{aiTips.overall_recommendation}</p>
+                </div>
+              )}
+
+              <button
+                type="button"
+                onClick={fetchAiTips}
+                disabled={aiTipsLoading}
+                className="mt-2 text-sm text-emerald-200 hover:text-emerald-100 disabled:opacity-50"
+              >
+                {aiTipsLoading ? "Refreshing..." : "Refresh tips"}
+              </button>
+            </div>
+          ) : !aiTipsError && !aiTipsLoading ? (
+            <p className="mt-2 text-sm text-slate-300">
+              Click the button to get personalized learning tips based on your quiz performance.
+            </p>
+          ) : null}
+
+          {aiTipsLoading && !aiTips && (
+            <div className="mt-4 flex items-center gap-2 text-sm text-slate-300">
+              <svg className="h-4 w-4 animate-spin" viewBox="0 0 24 24" fill="none">
+                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                <path
+                  className="opacity-75"
+                  fill="currentColor"
+                  d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                />
+              </svg>
+              Analyzing your quiz performance...
+            </div>
+          )}
         </section>
       ) : null}
     </div>

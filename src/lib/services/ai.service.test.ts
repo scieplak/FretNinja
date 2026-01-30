@@ -120,15 +120,64 @@ describe("AIService", () => {
       expect(result).toContain("Target chord: G major");
     });
 
-    it("should not include chord info when only root note is provided", () => {
+    it("should include scale info when both root and scale type are provided", () => {
       // Arrange
-      const command: AIHintCommand = { context: "quiz", target_root_note: "G" };
+      const command: AIHintCommand = {
+        context: "explorer",
+        target_scale_type: "major",
+        target_root_note: "C",
+      };
 
       // Act
       const result = service.testBuildHintPrompt(command);
 
       // Assert
+      expect(result).toContain("Target scale: C Major Scale");
+    });
+
+    it("should include pentatonic minor scale info", () => {
+      // Arrange
+      const command: AIHintCommand = {
+        context: "explorer",
+        target_scale_type: "pentatonic_minor",
+        target_root_note: "A",
+      };
+
+      // Act
+      const result = service.testBuildHintPrompt(command);
+
+      // Assert
+      expect(result).toContain("Target scale: A Pentatonic Minor Scale");
+    });
+
+    it("should prioritize scale over chord when both are provided", () => {
+      // Arrange
+      const command: AIHintCommand = {
+        context: "explorer",
+        target_scale_type: "natural_minor",
+        target_chord_type: "major",
+        target_root_note: "E",
+      };
+
+      // Act
+      const result = service.testBuildHintPrompt(command);
+
+      // Assert
+      expect(result).toContain("Target scale: E Natural Minor Scale");
       expect(result).not.toContain("Target chord:");
+    });
+
+    it("should include only root note when no scale or chord type is provided", () => {
+      // Arrange
+      const command: AIHintCommand = { context: "explorer", target_root_note: "G" };
+
+      // Act
+      const result = service.testBuildHintPrompt(command);
+
+      // Assert
+      expect(result).toContain("Root note: G");
+      expect(result).not.toContain("Target chord:");
+      expect(result).not.toContain("Target scale:");
     });
 
     it("should include user error positions when provided", () => {

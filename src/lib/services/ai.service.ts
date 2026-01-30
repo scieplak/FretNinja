@@ -7,10 +7,10 @@ import type {
   PersonalizedTipsResponseDTO,
   ApiErrorDTO,
 } from "../../types";
+import { OpenRouterService } from "./openrouter.service";
+import type { OpenRouterError } from "./openrouter.types";
 
 type SupabaseClientType = SupabaseClient<Database>;
-
-const OPENROUTER_API_URL = "https://openrouter.ai/api/v1/chat/completions";
 
 interface ServiceResult<T> {
   data?: T;
@@ -18,14 +18,14 @@ interface ServiceResult<T> {
 }
 
 export class AIService {
-  private apiKey: string;
+  private openrouter: OpenRouterService;
 
   constructor() {
-    this.apiKey = import.meta.env.OPENROUTER_API_KEY || "";
+    this.openrouter = new OpenRouterService();
   }
 
   async generateHint(command: AIHintCommand): Promise<ServiceResult<AIHintResponseDTO>> {
-    if (!this.apiKey) {
+    if (!this.openrouter.isAvailable()) {
       console.error("OpenRouter API key not configured");
       return {
         error: { status: 503, body: { code: "AI_UNAVAILABLE", message: "AI service not configured" } },
@@ -34,65 +34,57 @@ export class AIService {
 
     const prompt = this.buildHintPrompt(command);
 
-    try {
-      const response = await fetch(OPENROUTER_API_URL, {
-        method: "POST",
-        headers: {
-          Authorization: `Bearer ${this.apiKey}`,
-          "Content-Type": "application/json",
-          "HTTP-Referer": import.meta.env.SITE_URL || "https://fretninja.com",
-          "X-Title": "FretNinja",
+    const result = await this.openrouter.chatCompletion<AIHintResponseDTO>({
+      messages: [
+        { role: "system", content: this.getHintSystemPrompt() },
+        { role: "user", content: prompt },
+      ],
+      parameters: {
+        temperature: 0.7,
+        max_tokens: 500,
+      },
+      responseFormat: {
+        type: "json_schema",
+        json_schema: {
+          name: "guitar_hint",
+          strict: true,
+          schema: {
+            type: "object",
+            properties: {
+              hint: { type: "string" },
+              related_positions: {
+                type: "array",
+                items: {
+                  type: "object",
+                  properties: {
+                    fret: { type: "number" },
+                    string: { type: "number" },
+                    note: { type: "string" },
+                  },
+                  required: ["fret", "string", "note"],
+                },
+              },
+              memorization_tip: { type: "string" },
+            },
+            required: ["hint", "related_positions", "memorization_tip"],
+          },
         },
-        body: JSON.stringify({
-          model: "anthropic/claude-3-haiku",
-          messages: [
-            {
-              role: "system",
-              content: this.getHintSystemPrompt(),
-            },
-            {
-              role: "user",
-              content: prompt,
-            },
-          ],
-          temperature: 0.7,
-          max_tokens: 500,
-        }),
-      });
+      },
+    });
 
-      if (!response.ok) {
-        if (response.status === 429) {
-          return {
-            error: {
-              status: 429,
-              body: { code: "RATE_LIMITED", message: "Too many hint requests. Please wait before trying again." },
-            },
-          };
-        }
-
-        console.error("OpenRouter API error:", response.status);
-        return {
-          error: { status: 503, body: { code: "AI_UNAVAILABLE", message: "AI service temporarily unavailable" } },
-        };
-      }
-
-      const data = await response.json();
-      const content = data.choices?.[0]?.message?.content;
-
-      if (!content) {
-        return {
-          error: { status: 500, body: { code: "SERVER_ERROR", message: "Failed to generate hint" } },
-        };
-      }
-
-      const parsed = this.parseHintResponse(content);
-      return { data: parsed };
-    } catch (error) {
-      console.error("AI service error:", error);
-      return {
-        error: { status: 503, body: { code: "AI_UNAVAILABLE", message: "AI service temporarily unavailable" } },
-      };
+    if (!result.success) {
+      return this.mapOpenRouterError(result.error!);
     }
+
+    // Ensure we have valid data with defaults for missing fields
+    const data = result.data!;
+    return {
+      data: {
+        hint: data.hint || "",
+        related_positions: data.related_positions || [],
+        memorization_tip: data.memorization_tip || "",
+      },
+    };
   }
 
   private getHintSystemPrompt(): string {
@@ -136,8 +128,19 @@ Use sharp notation only (C#, not Db). String numbers: 1=high E, 6=low E.`;
       prompt += `\nTarget interval: ${command.target_interval}`;
     }
 
-    if (command.target_chord_type && command.target_root_note) {
+    if (command.target_scale_type && command.target_root_note) {
+      const scaleNames: Record<string, string> = {
+        major: "Major Scale",
+        natural_minor: "Natural Minor Scale",
+        pentatonic_major: "Pentatonic Major Scale",
+        pentatonic_minor: "Pentatonic Minor Scale",
+      };
+      const scaleName = scaleNames[command.target_scale_type] || command.target_scale_type;
+      prompt += `\nTarget scale: ${command.target_root_note} ${scaleName}`;
+    } else if (command.target_chord_type && command.target_root_note) {
       prompt += `\nTarget chord: ${command.target_root_note} ${command.target_chord_type}`;
+    } else if (command.target_root_note) {
+      prompt += `\nRoot note: ${command.target_root_note}`;
     }
 
     if (command.user_error_positions && command.user_error_positions.length > 0) {
@@ -176,7 +179,7 @@ Use sharp notation only (C#, not Db). String numbers: 1=high E, 6=low E.`;
     userId: string,
     command: PersonalizedTipsCommand
   ): Promise<ServiceResult<PersonalizedTipsResponseDTO>> {
-    if (!this.apiKey) {
+    if (!this.openrouter.isAvailable()) {
       console.error("OpenRouter API key not configured");
       return {
         error: { status: 503, body: { code: "AI_UNAVAILABLE", message: "AI service not configured" } },
@@ -233,65 +236,68 @@ Use sharp notation only (C#, not Db). String numbers: 1=high E, 6=low E.`;
     // 4. Build AI prompt
     const prompt = this.buildPersonalizedTipsPrompt(errorPatterns, command.limit || 3);
 
-    // 5. Call OpenRouter
-    try {
-      const response = await fetch(OPENROUTER_API_URL, {
-        method: "POST",
-        headers: {
-          Authorization: `Bearer ${this.apiKey}`,
-          "Content-Type": "application/json",
-          "HTTP-Referer": import.meta.env.SITE_URL || "https://fretninja.com",
-          "X-Title": "FretNinja",
+    // 5. Call OpenRouter via service
+    const result = await this.openrouter.chatCompletion<PersonalizedTipsResponseDTO>({
+      messages: [
+        { role: "system", content: this.getPersonalizedTipsSystemPrompt() },
+        { role: "user", content: prompt },
+      ],
+      parameters: {
+        temperature: 0.7,
+        max_tokens: 1000,
+      },
+      responseFormat: {
+        type: "json_schema",
+        json_schema: {
+          name: "personalized_tips",
+          strict: true,
+          schema: {
+            type: "object",
+            properties: {
+              tips: {
+                type: "array",
+                items: {
+                  type: "object",
+                  properties: {
+                    focus_area: { type: "string" },
+                    observation: { type: "string" },
+                    suggestion: { type: "string" },
+                    practice_positions: {
+                      type: "array",
+                      items: {
+                        type: "object",
+                        properties: {
+                          fret: { type: "number" },
+                          string: { type: "number" },
+                          note: { type: "string" },
+                        },
+                        required: ["fret", "string", "note"],
+                      },
+                    },
+                  },
+                  required: ["focus_area", "observation", "suggestion", "practice_positions"],
+                },
+              },
+              overall_recommendation: { type: "string" },
+            },
+            required: ["tips", "overall_recommendation"],
+          },
         },
-        body: JSON.stringify({
-          model: "anthropic/claude-3-haiku",
-          messages: [
-            {
-              role: "system",
-              content: this.getPersonalizedTipsSystemPrompt(),
-            },
-            {
-              role: "user",
-              content: prompt,
-            },
-          ],
-          temperature: 0.7,
-          max_tokens: 1000,
-        }),
-      });
+      },
+    });
 
-      if (!response.ok) {
-        if (response.status === 429) {
-          return {
-            error: {
-              status: 429,
-              body: { code: "RATE_LIMITED", message: "Too many requests. Please wait before trying again." },
-            },
-          };
-        }
-
-        return {
-          error: { status: 503, body: { code: "AI_UNAVAILABLE", message: "AI service temporarily unavailable" } },
-        };
-      }
-
-      const data = await response.json();
-      const content = data.choices?.[0]?.message?.content;
-
-      if (!content) {
-        return {
-          error: { status: 500, body: { code: "SERVER_ERROR", message: "Failed to generate tips" } },
-        };
-      }
-
-      const parsed = this.parsePersonalizedTipsResponse(content);
-      return { data: parsed };
-    } catch (error) {
-      console.error("AI service error:", error);
-      return {
-        error: { status: 503, body: { code: "AI_UNAVAILABLE", message: "AI service temporarily unavailable" } },
-      };
+    if (!result.success) {
+      return this.mapOpenRouterError(result.error!);
     }
+
+    // Ensure we have valid data with defaults for missing fields
+    const data = result.data!;
+    return {
+      data: {
+        tips: data.tips || [],
+        overall_recommendation: data.overall_recommendation || "",
+      },
+    };
   }
 
   private aggregateErrorPatterns(
@@ -382,6 +388,39 @@ Please provide ${limit} specific, actionable tips based on these patterns.`;
     return {
       tips: [],
       overall_recommendation: content,
+    };
+  }
+
+  /**
+   * Maps OpenRouter errors to the service error format.
+   */
+  private mapOpenRouterError(error: OpenRouterError): ServiceResult<never> {
+    const statusMap: Record<string, number> = {
+      RATE_LIMITED: 429,
+      INVALID_API_KEY: 503,
+      SERVICE_UNAVAILABLE: 503,
+      TIMEOUT: 503,
+      MODEL_NOT_FOUND: 503,
+      CONTENT_FILTERED: 400,
+      PARSE_ERROR: 500,
+      SCHEMA_VALIDATION_ERROR: 500,
+      UNKNOWN_ERROR: 500,
+    };
+
+    const codeMap: Record<string, string> = {
+      RATE_LIMITED: "RATE_LIMITED",
+      PARSE_ERROR: "SERVER_ERROR",
+    };
+
+    return {
+      error: {
+        status: statusMap[error.code] ?? 500,
+        body: {
+          code: codeMap[error.code] ?? "AI_UNAVAILABLE",
+          message:
+            error.code === "RATE_LIMITED" ? "Too many requests. Please wait before trying again." : error.message,
+        },
+      },
     };
   }
 }

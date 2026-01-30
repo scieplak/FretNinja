@@ -2,6 +2,7 @@ import { z } from "zod";
 
 const noteEnum = z.enum(["C", "C#", "D", "D#", "E", "F", "F#", "G", "G#", "A", "A#", "B"]);
 const chordTypeEnum = z.enum(["major", "minor", "diminished", "augmented"]);
+const scaleTypeEnum = z.enum(["major", "natural_minor", "pentatonic_major", "pentatonic_minor"]);
 const intervalEnum = z.enum([
   "minor_2nd",
   "major_2nd",
@@ -32,6 +33,7 @@ export const aiHintCommandSchema = z
     target_interval: intervalEnum.nullable().optional(),
     target_chord_type: chordTypeEnum.nullable().optional(),
     target_root_note: noteEnum.nullable().optional(),
+    target_scale_type: scaleTypeEnum.nullable().optional(),
     fret_position: z.number().int().min(0).max(24).nullable().optional(),
     string_number: z.number().int().min(1).max(6).nullable().optional(),
     user_error_positions: z.array(fretPositionSchema).nullable().optional(),

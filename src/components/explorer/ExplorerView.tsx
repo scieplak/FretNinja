@@ -1,12 +1,20 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 
-import type { AIHintCommand, AIHintResponseDTO, ChordTypeEnum, NoteEnum } from "@/types";
+import type { AIHintCommand, AIHintResponseDTO, ChordTypeEnum, NoteEnum, ScaleTypeEnum } from "@/types";
 import Fretboard, { getFretboardPositions } from "@/components/fretboard/Fretboard";
 
 type PatternType = "scale" | "chord";
 
 const ROOT_NOTES: NoteEnum[] = ["C", "C#", "D", "D#", "E", "F", "F#", "G", "G#", "A", "A#", "B"];
 const SCALE_OPTIONS = ["Major Scale", "Natural Minor", "Pentatonic Major", "Pentatonic Minor"];
+
+// Map display names to API scale types
+const SCALE_TYPE_MAP: Record<string, ScaleTypeEnum> = {
+  "Major Scale": "major",
+  "Natural Minor": "natural_minor",
+  "Pentatonic Major": "pentatonic_major",
+  "Pentatonic Minor": "pentatonic_minor",
+};
 const CHORD_OPTIONS: { label: string; value: ChordTypeEnum }[] = [
   { label: "Major", value: "major" },
   { label: "Minor", value: "minor" },
@@ -85,24 +93,26 @@ const ExplorerView = () => {
   const handleHint = useCallback(async () => {
     setHint(null);
     setHintError(null);
-    const token = localStorage.getItem("fn_access_token");
-    if (!token) {
-      setHintError("Sign in to access AI hints.");
-      return;
-    }
-
     setIsLoadingHint(true);
+
     try {
       const payload: AIHintCommand = {
         context: "explorer",
         target_root_note: rootNote,
         target_chord_type: patternType === "chord" ? chordType : null,
+        target_scale_type: patternType === "scale" ? SCALE_TYPE_MAP[scale] : null,
       };
       const response = await fetch("/api/ai/hint", {
         method: "POST",
-        headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
+        headers: { "Content-Type": "application/json" },
+        credentials: "include",
         body: JSON.stringify(payload),
       });
+
+      if (response.status === 401) {
+        setHintError("Sign in to access AI hints.");
+        return;
+      }
 
       if (!response.ok) {
         setHintError("Hint unavailable right now. Please try again.");
@@ -116,7 +126,7 @@ const ExplorerView = () => {
     } finally {
       setIsLoadingHint(false);
     }
-  }, [chordType, patternType, rootNote]);
+  }, [chordType, patternType, rootNote, scale]);
 
   const overlayLabel = useMemo(() => {
     return patternType === "scale" ? `${rootNote} ${scale}` : `${rootNote} ${chordType}`;

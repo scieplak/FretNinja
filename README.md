@@ -56,7 +56,14 @@ Free exploration of the fretboard with:
 - **Scales:** Major, Natural Minor, Pentatonic Major, Pentatonic Minor
 - **Chords:** Major, Minor, Diminished, Augmented triads
 - **Controls:** Toggle note names, switch between 12/24 fret views
-- **AI Hints:** Get learning tips and memorization tricks (requires login)
+- **AI Hints:** Get contextual learning tips and memorization tricks for the selected scale or chord (requires login)
+
+### AI-Powered Features
+
+FretNinja integrates with OpenRouter.ai to provide intelligent learning assistance:
+
+- **Explorer Hints:** Context-aware tips about the currently selected scale or chord, including related positions and memorization techniques
+- **Dashboard Tips:** Personalized practice recommendations based on your quiz error patterns, identifying areas that need more focus
 
 ### Progress Tracking
 
@@ -127,6 +134,10 @@ Free exploration of the fretboard with:
 │  │   Auth       │  │    Quiz      │  │    Stats     │       │
 │  │  Service     │  │   Service    │  │   Service    │       │
 │  └──────────────┘  └──────────────┘  └──────────────┘       │
+│  ┌──────────────┐  ┌──────────────┐                         │
+│  │     AI       │  │  OpenRouter  │                         │
+│  │  Service     │──│   Service    │─────────► OpenRouter.ai │
+│  └──────────────┘  └──────────────┘                         │
 └─────────────────────────┬───────────────────────────────────┘
                           │
 ┌─────────────────────────▼───────────────────────────────────┐
@@ -167,8 +178,11 @@ cp .env.example .env
 SUPABASE_URL=https://your-project.supabase.co
 SUPABASE_KEY=your-anon-key
 
-# OpenRouter (optional, for AI hints)
+# OpenRouter (optional, for AI features)
 OPENROUTER_API_KEY=your-api-key
+
+# Site URL (used for OpenRouter HTTP-Referer header)
+SITE_URL=http://localhost:4321
 ```
 
 ### Development
@@ -279,7 +293,8 @@ vercel --prod
 Configure the following environment variables in Vercel:
 - `SUPABASE_URL`
 - `SUPABASE_KEY`
-- `OPENROUTER_API_KEY` (optional)
+- `OPENROUTER_API_KEY` (optional, for AI features)
+- `SITE_URL` (your production URL, e.g., `https://fretninja.vercel.app`)
 
 ## Database Schema
 
