@@ -2,7 +2,7 @@
 
 A web-based educational application for guitarists to master the fretboard through interactive quizzes, exploration, and gamification.
 
-**Live Demo:** [fretninja.vercel.app](https://fretninja.vercel.app)
+**Live Demo:** [fret-ninja.vercel.app](https://fret-ninja.vercel.app)
 
 ## Table of Contents
 
